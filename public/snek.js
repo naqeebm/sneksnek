@@ -2,8 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://139.59.164.28:8080');
-socket = io.connect('http://139.59.164.28:8080/');
+// console.log('connecting to http://139.59.164.28:8080');
+// socket = io.connect('http://139.59.164.28:8080/');
+console.log('connecting to http://localhost:8080/');
+socket = io.connect('http://localhost:8080/');
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
@@ -60,27 +62,33 @@ socket.on('data', data => {
   // scores
   for (let i = 0; i < snakes.length; i++) {
     ctx.fillStyle = snakes[i].col;
-    ctx.fillRect(820, 10 + i * 40, 20, 20);
+    ctx.fillRect(10, 20 + i * 40, 20, 20);
     ctx.font = '24px calibri';
-    ctx.fillText(snakes[i].len, 850, 10 + i * 40 + 16);
+    ctx.fillText(snakes[i].len, 40, 20 + i * 40 + 16);
   }
   if (chat.showing) {
     ctx.fillStyle = 'darkgrey';
     ctx.fillRect(0, canv.height - 30, canv.width, 2);
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillStyle = 'rgba(129,200,200,0.8)';
     ctx.fillRect(0, canv.height - 30, canv.width, 28);
     ctx.fillStyle = 'black';
-    ctx.font = '12px monospace';
+    ctx.font = '16px monospace';
     ctx.fillText(chat.message, 10, canv.height - 10);
   }
   ctx.scale(scale, scale);
 
   // messages
   for (let i = 0; i < messages.length; i++) {
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillRect(290, 40 + i * 68, messages[i].message.length * 38 + 50, 110);
+    ctx.lineWidth = 4;
     ctx.fillStyle = messages[i].col;
-    ctx.fillRect(18000 * scale, 100 + i * 68, 20, 20);
-    ctx.font = '68px calibri';
-    ctx.fillText(messages[i].message, 18200 * scale, 100 + i * 68 + 16);
+    ctx.fillRect(300, 60 + i * 68, 40, 40);
+    ctx.font = '68px monospace';
+    ctx.fillStyle = 'black';
+    ctx.fillText(messages[i].message, 360 + 4, 80 + i * 68 + 20);
+    ctx.fillStyle = messages[i].col;
+    ctx.fillText(messages[i].message, 360, 80 + i * 68 + 16);
   }
   ctx.scale(1 / scale, 1 / scale);
 });
@@ -104,7 +112,7 @@ function drawSnake(ctx, snakeObj, tiles, tileSize = 8, offset = 1) {
   snakeObj.blocks.forEach(block => {
     ctx.fillStyle = snakeObj.col;
     ctx.strokeStyle = snakeObj.col;
-    ctx.strokeRect(block.x * tileSize, block.y * tileSize, tileSize, tileSize);
+    // ctx.strokeRect(block.x * tileSize, block.y * tileSize, tileSize, tileSize);
     ctx.beginPath();
     ctx.arc(
       block.x * tileSize + tileSize / 2,
@@ -151,18 +159,23 @@ window.addEventListener('keydown', e => {
         break;
     }
   } else {
-    if (e.keyCode === 8) {
-      chat.message = chat.message.slice(0, chat.message.length - 1);
-    } else if (e.keyCode === 13) {
-      socket.emit('message', chat.message);
+    if (e.keyCode === 13) {
+      if (chat.message.length > 0) {
+        while (chat.message.length > 0) {
+          socket.emit('message', chat.message.slice(0, 64));
+          chat.message = chat.message.slice(32, chat.message.length);
+        }
+      }
       chat.message = null;
       chat.showing = false;
+    } else if (e.keyCode === 8) {
+      chat.message = chat.message.slice(0, chat.message.length - 1);
     } else if (e.keyCode === 27) {
       chat.message = null;
       chat.showing = false;
     } else {
       if (
-        (chat.message.length < 64 && (e.keyCode > 47 && e.keyCode < 58)) ||
+        (e.keyCode > 47 && e.keyCode < 58) ||
         e.keyCode == 32 ||
         (e.keyCode > 64 && e.keyCode < 91) ||
         (e.keyCode > 95 && e.keyCode < 112) ||

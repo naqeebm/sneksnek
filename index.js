@@ -13,12 +13,23 @@ var io = socket(server);
 let snakes = [];
 let food = [];
 let messages = [];
+const startTime = null;
+
 const tiles = 48;
 const tileSize = 64;
-const offset = 1;
-const foodPerSnek = 5;
-const moveScale = 1;
-const defaultLength = 4;
+const offset = 4;
+const foodPerSnek = 4;
+const moveScale = 0.5;
+const defaultLength = 16;
+
+const checkProximity = (x1, y1, x2, y2, leeway) => {
+  len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  if (Math.abs(len) < leeway) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 io.on('connection', con => {
   console.log(con.id, 'made connection');
@@ -82,13 +93,17 @@ io.on('connection', con => {
     };
     messages.push(newMsg);
     snake = snakes.filter(snake => snake.id === con.id)[0];
-    snake.message = newMsg;
+    if (snake !== null) {
+      snake.message = null;
+      snake.message = newMsg;
+    }
     console.log('>>', con.id, data);
   });
 });
 
+ticker = 0;
 setInterval(() => {
-  // console.log(`snakes: ${snakes.length}`);
+  ticker++;
   snakes.forEach(snake => {
     if (!snake.dead) {
       const newX =
@@ -102,14 +117,10 @@ setInterval(() => {
           tiles) %
         tiles;
       food.forEach(fud => {
-        if (fud.x === newX && fud.y === newY) {
+        if (checkProximity(fud.x, fud.y, newX, newY, 1) === true) {
           snake.len++;
-          if (snakes.length * foodPerSnek < food.length) {
-            food = food.filter(iFud => iFud.x !== fud.x && iFud.y !== fud.y);
-          } else {
-            fud.x = Math.floor(Math.random() * tiles);
-            fud.y = Math.floor(Math.random() * tiles);
-          }
+          fud.x = Math.floor(Math.random() * tiles);
+          fud.y = Math.floor(Math.random() * tiles);
         }
       });
       snake.blocks.push({ x: newX, y: newY });
@@ -136,15 +147,19 @@ setInterval(() => {
   messages.forEach(msg => {
     if (msg.life > 0) {
       msg.life--;
-      if (msg.life == 0) {
-        let snek = snakes.filter(snake => snake.id === msg.id)[0];
-        if (snek !== null) {
-          snek.message = null;
-        }
-        messages = messages.filter(msg2 => msg2.id !== msg.id);
-      }
     }
   });
 
+  if (messages.length > 10) {
+    if (ticker > 10) {
+      messages.splice(0, 1);
+    }
+  } else {
+    if (ticker > 200) {
+      messages.splice(0, 1);
+      ticker = 0;
+    }
+  }
+
   io.sockets.emit('data', data);
-}, 1000 / 12);
+}, 1000 / 30);
