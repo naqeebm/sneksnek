@@ -13,15 +13,9 @@ var io = socket(server);
 let snakes = [];
 let food = [];
 let messages = [];
-<<<<<<< HEAD
 const tiles = 48;
 const tileSize = 64;
 const offset = 1;
-=======
-const tiles = 24;
-const tileSize = 32;
-const offset = 0.1;
->>>>>>> d627beb551820d99df599feb77552f8be74dd27d
 const foodPerSnek = 5;
 const moveScale = 1;
 const defaultLength = 4;
