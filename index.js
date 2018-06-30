@@ -17,7 +17,7 @@ const tiles = 24;
 const tileSize = 32;
 const offset = 0.1;
 const foodPerSnek = 5;
-const moveScale = 0.5;
+const moveScale = 1;
 const defaultLength = 4;
 
 io.on('connection', con => {
