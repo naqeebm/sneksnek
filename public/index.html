@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.dev.js"></script>
+  <link rel='stylesheet' ref='./style.css'></link>
+  <title>Snek</title>
+</head>
+
+<body style='margin: 0 0; padding: 0 0;display:flex'>
+  <!-- <div id='game' style='display:none'> -->
+  <canvas tab-index=0 id="canv" height=772 width=972></canvas>
+  <div id='msgs' style='overflow: hidden;display:inline-block; height:772px'>
+  </div>
+  <!-- </div> -->
+  <div id='serverconnectbuis'>
+    <input type="text" value='server ip' id='serverIp' />
+    <button onclick="connectToServer()">connect</button>
+  </div>
+  <script src="./snek.js"></script>
+</body>
+
+</html>
