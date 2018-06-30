@@ -18,7 +18,7 @@ const tileSize = 32;
 const offset = 0.1;
 const foodPerSnek = 5;
 const moveScale = 0.5;
-const defaultLength = 64;
+const defaultLength = 4;
 
 io.on('connection', con => {
   console.log(con.id, 'made connection');
@@ -119,7 +119,7 @@ setInterval(() => {
       let offset = Math.min(4, snake.blocks.length);
       for (let i = 0; i < snake.blocks.length; i++) {
         snake.blocks[snake.blocks.length - 1 - i].size = tileSize - offset;
-        if (tileSize - offset > 8) {
+        if (tileSize - offset > 24) {
           offset += 0.64;
         }
       }
