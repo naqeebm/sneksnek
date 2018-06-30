@@ -14,11 +14,11 @@ let snakes = [];
 let food = [];
 let messages = [];
 const tiles = 48;
-const tileSize = 16;
-const offset = 0.1;
+const tileSize = 64;
+const offset = 1;
 const foodPerSnek = 5;
-const moveScale = 0.5;
-const defaultLength = 64;
+const moveScale = 1;
+const defaultLength = 4;
 
 io.on('connection', con => {
   console.log(con.id, 'made connection');
@@ -78,7 +78,7 @@ io.on('connection', con => {
       id: con.id,
       col: snakes.filter(snake => snake.id === con.id)[0].col,
       message: data,
-      life: 100
+      life: 50
     };
     messages.push(newMsg);
     snake = snakes.filter(snake => snake.id === con.id)[0];
@@ -137,10 +137,14 @@ setInterval(() => {
     if (msg.life > 0) {
       msg.life--;
       if (msg.life == 0) {
-        snakes.filter(snake => snake.id === msg.id)[0].message = null;
+        let snek = snakes.filter(snake => snake.id === msg.id)[0];
+        if (snek !== null) {
+          snek.message = null;
+        }
+        messages = messages.filter(msg2 => msg2.id !== msg.id);
       }
     }
   });
 
   io.sockets.emit('data', data);
-}, 1000 / 24);
+}, 1000 / 12);
