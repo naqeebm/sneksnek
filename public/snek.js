@@ -61,10 +61,9 @@ socket.on('data', data => {
   // scores
   for (let i = 0; i < snakes.length; i++) {
     ctx.fillStyle = snakes[i].col;
-    ctx.fillRect(-180, 10 + i * 40, 20, 20);
+    ctx.fillRect(820, 10 + i * 40, 20, 20);
     ctx.font = '24px calibri';
-    ctx.fillStyle = 'black';
-    ctx.fillText(snakes[i].len, -155, 10 + i * 40 + 16);
+    ctx.fillText(snakes[i].len, 850, 10 + i * 40 + 16);
   }
   if (chat.showing) {
     ctx.fillStyle = 'darkgrey';
@@ -75,6 +74,16 @@ socket.on('data', data => {
     ctx.font = '12px monospace';
     ctx.fillText(chat.message, 10, canv.height - 10);
   }
+  ctx.scale(scale, scale);
+
+  // messages
+  for (let i = 0; i < messages.length; i++) {
+    ctx.fillStyle = messages[i].col;
+    ctx.fillRect(18000 * scale, 100 + i * 68, 20, 20);
+    ctx.font = '68px calibri';
+    ctx.fillText(messages[i].message, 18200 * scale, 100 + i * 68 + 16);
+  }
+  ctx.scale(1 / scale, 1 / scale);
 });
 
 function drawGrid(ctx, tiles, tileSize = 8, offset = 1, col = 'white') {
