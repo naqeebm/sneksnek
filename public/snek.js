@@ -35,7 +35,6 @@ socket.on('data', data => {
   ctx.fillRect(0, 0, canv.width, canv.height);
   drawGrid(ctx, data.meta.tiles, data.meta.tileSize, data.meta.offset);
 
-<<<<<<< HEAD
   food.forEach(nomnom =>
     drawFood(ctx, nomnom, data.meta.tileSize, data.meta.offset)
   );
@@ -56,72 +55,6 @@ socket.on('data', data => {
         snake.blocks[snake.blocks.length - 1].x * data.meta.tileSize,
         snake.blocks[snake.blocks.length - 1].y * data.meta.tileSize - 5
       );
-=======
-  socket.on('data', data => {
-    ctx.clearRect(0, 0, canv.width, canv.height);
-    ctx.fillStyle = 'grey';
-    ctx.translate(200, 0);
-    snakes = data.snakes;
-    food = data.food;
-    messages = data.messages;
-    // canvas scene
-    ctx.clearRect(0, 0, canv.width, canv.height);
-    ctx.fillRect(0, 0, canv.width, canv.height);
-    ctx.translate(2, 2);
-    drawGrid(ctx, data.meta.tiles, data.meta.tileSize, data.meta.offset);
-    snakes.forEach(snake => {
-      drawSnake(
-        ctx,
-        snake,
-        data.meta.tiles,
-        data.meta.tileSize,
-        data.meta.offset
-      );
-      if (snake.message !== null) {
-        ctx.fillStyle = `rgba(0,0,0,${snake.message.life / 50})`;
-        ctx.font = '32px arial';
-        ctx.fillText(
-          `${snake.message.message}`,
-          snake.blocks[snake.blocks.length - 1].x * data.meta.tileSize,
-          snake.blocks[snake.blocks.length - 1].y * data.meta.tileSize
-        );
-      }
-    });
-    food.forEach(nomnom =>
-      drawFood(ctx, nomnom, data.meta.tileSize, data.meta.offset)
-    );
-    // scores
-    for (let i = 0; i < snakes.length; i++) {
-      ctx.fillStyle = snakes[i].col;
-      ctx.fillRect(-180, 10 + i * 40, 20, 20);
-      ctx.fontStyle='16px arial';
-      ctx.fillStyle = 'green';
-      ctx.fillText(snakes[i].len, -155, 10 + i * 40 + 16);
-    }
-    ctx.translate(-202, -2);
-    // messages
-    let msgsBox = document.getElementById('msgs');
-    msgsBox.innerHTML = '';
-    let prevCol = null;
-    messages.forEach(msg => {
-      if (prevCol !== msg.col) {
-        prevCol = msg.col;
-        msgsBox.innerHTML += '<br/>';
-      }
-      msgsBox.innerHTML += `<div style='border-left:4px solid ${msg.col}'>   ${
-        msg.message
-      }</div>`;
-    });
-    msgsBox.scrollTo(0, 500);
-    if (chat.showing) {
-      ctx.fillStyle = 'darkgrey';
-      ctx.fillRect(202, canv.height - 30, canv.width - 204, 2);
-      ctx.fillStyle = 'rgba(0,0,0,0.2)';
-      ctx.fillRect(202, canv.height - 30, canv.width - 204, 28);
-      ctx.fillStyle = 'black';
-      ctx.font = '12px monospace';
-      ctx.fillText(chat.message, 210, canv.height - 10);
->>>>>>> d627beb551820d99df599feb77552f8be74dd27d
     }
   });
   ctx.scale(1 / scale, 1 / scale);
