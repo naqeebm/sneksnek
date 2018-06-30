@@ -24,7 +24,6 @@ socket.on('data', data => {
   } else {
     scale = canv.width / (data.meta.tileSize * data.meta.tiles);
   }
-  console.log(scale);
   ctx.fillStyle = 'grey';
   snakes = data.snakes;
   food = data.food;
