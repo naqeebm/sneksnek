@@ -40,7 +40,7 @@ function callback() {
       );
       if (snake.message !== null) {
         ctx.fillStyle = `rgba(0,0,0,${snake.message.life / 50})`;
-        ctx.font = '16px arial';
+        ctx.font = '32px arial';
         ctx.fillText(
           `${snake.message.message}`,
           snake.blocks[snake.blocks.length - 1].x * data.meta.tileSize,
@@ -55,6 +55,7 @@ function callback() {
     for (let i = 0; i < snakes.length; i++) {
       ctx.fillStyle = snakes[i].col;
       ctx.fillRect(-180, 10 + i * 40, 20, 20);
+      ctx.fontStyle='16px arial';
       ctx.fillStyle = 'green';
       ctx.fillText(snakes[i].len, -155, 10 + i * 40 + 16);
     }
