@@ -134,6 +134,24 @@ setInterval(() => {
           offset += 0.64;
         }
       }
+      snakes.filter(snk => snk.id !== snake.id).forEach(snake2 => {
+        for (let i = 0; i < snake2.blocks.length; i++) {
+          if (
+            checkProximity(
+              snake2.blocks[i].x,
+              snake2.blocks[i].y,
+              newX,
+              newY,
+              1
+            )
+          ) {
+            snake.len += i + 1;
+            snake2.len -= i + 1;
+            snake2.blocks.splice(0, i);
+            break;
+          }
+        }
+      });
     }
   });
 
