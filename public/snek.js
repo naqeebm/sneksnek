@@ -1,89 +1,81 @@
 const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
+
+console.log('connecting to http://localhost:8080');
+socket = io.connect('http://localhost:8080/');
+
+canv.height = document.documentElement.clientHeight;
+canv.width = document.documentElement.clientWidth;
+
 let snakes = [];
 let food = [];
 let messages = [];
+
 let chat = { showing: false, message: null };
 
-function connectToServer() {
-  console.log('connecting to', document.getElementById('serverIp').value);
-  socket = io.connect(document.getElementById('serverIp').value);
-  if (socket !== null) {
-    // document.getElementById('game').style.display = 'block';
-    document.getElementById('serverconnectbuis').style.display = 'none';
-    callback();
-  }
-}
-function callback() {
-  ctx.fillRect(0, 0, canv.width, canv.height);
+ctx.fillRect(0, 0, canv.width, canv.height);
 
-  socket.on('data', data => {
-    ctx.clearRect(0, 0, canv.width, canv.height);
-    ctx.fillStyle = 'grey';
-    ctx.translate(200, 0);
-    snakes = data.snakes;
-    food = data.food;
-    messages = data.messages;
-    // canvas scene
-    ctx.clearRect(0, 0, canv.width, canv.height);
-    ctx.fillRect(0, 0, canv.width, canv.height);
-    ctx.translate(2, 2);
-    drawGrid(ctx, data.meta.tiles, data.meta.tileSize, data.meta.offset);
-    snakes.forEach(snake => {
-      drawSnake(
-        ctx,
-        snake,
-        data.meta.tiles,
-        data.meta.tileSize,
-        data.meta.offset
-      );
-      if (snake.message !== null) {
-        ctx.fillStyle = `rgba(0,0,0,${snake.message.life / 50})`;
-        ctx.font = '16px arial';
-        ctx.fillText(
-          `${snake.message.message}`,
-          snake.blocks[snake.blocks.length - 1].x * data.meta.tileSize,
-          snake.blocks[snake.blocks.length - 1].y * data.meta.tileSize
-        );
-      }
-    });
-    food.forEach(nomnom =>
-      drawFood(ctx, nomnom, data.meta.tileSize, data.meta.offset)
+socket.on('data', data => {
+  ctx.clearRect(0, 0, canv.width, canv.height);
+  let scale = 1;
+  if (canv.height < canv.width) {
+    scale = canv.height / (data.meta.tileSize * data.meta.tiles);
+  } else {
+    scale = canv.width / (data.meta.tileSize * data.meta.tiles);
+  }
+  console.log(scale);
+  ctx.fillStyle = 'grey';
+  snakes = data.snakes;
+  food = data.food;
+  messages = data.messages;
+  // canvas scene
+  ctx.scale(scale, scale);
+  ctx.clearRect(0, 0, canv.width, canv.height);
+  ctx.fillRect(0, 0, canv.width, canv.height);
+  drawGrid(ctx, data.meta.tiles, data.meta.tileSize, data.meta.offset);
+
+  food.forEach(nomnom =>
+    drawFood(ctx, nomnom, data.meta.tileSize, data.meta.offset)
+  );
+
+  snakes.forEach(snake => {
+    drawSnake(
+      ctx,
+      snake,
+      data.meta.tiles,
+      data.meta.tileSize,
+      data.meta.offset
     );
-    // scores
-    for (let i = 0; i < snakes.length; i++) {
-      ctx.fillStyle = snakes[i].col;
-      ctx.fillRect(-180, 10 + i * 40, 20, 20);
-      ctx.fillStyle = 'green';
-      ctx.fillText(snakes[i].len, -155, 10 + i * 40 + 16);
-    }
-    ctx.translate(-202, -2);
-    // messages
-    let msgsBox = document.getElementById('msgs');
-    msgsBox.innerHTML = '';
-    let prevCol = null;
-    messages.forEach(msg => {
-      if (prevCol !== msg.col) {
-        prevCol = msg.col;
-        msgsBox.innerHTML += '<br/>';
-      }
-      msgsBox.innerHTML += `<div style='border-left:4px solid ${msg.col}'>   ${
-        msg.message
-      }</div>`;
-    });
-    msgsBox.scrollTo(0, 500);
-    if (chat.showing) {
-      ctx.fillStyle = 'darkgrey';
-      ctx.fillRect(202, canv.height - 30, canv.width - 204, 2);
-      ctx.fillStyle = 'rgba(0,0,0,0.2)';
-      ctx.fillRect(202, canv.height - 30, canv.width - 204, 28);
-      ctx.fillStyle = 'black';
-      ctx.font = '12px monospace';
-      ctx.fillText(chat.message, 210, canv.height - 10);
+    if (snake.message !== null) {
+      ctx.fillStyle = `rgba(0,0,0,${snake.message.life / 25})`;
+      ctx.font = `${96}px monospace`;
+      ctx.fillText(
+        `${snake.message.message}`,
+        snake.blocks[snake.blocks.length - 1].x * data.meta.tileSize,
+        snake.blocks[snake.blocks.length - 1].y * data.meta.tileSize - 5
+      );
     }
   });
-}
+  ctx.scale(1 / scale, 1 / scale);
+  // scores
+  for (let i = 0; i < snakes.length; i++) {
+    ctx.fillStyle = snakes[i].col;
+    ctx.fillRect(-180, 10 + i * 40, 20, 20);
+    ctx.font = '24px calibri';
+    ctx.fillStyle = 'black';
+    ctx.fillText(snakes[i].len, -155, 10 + i * 40 + 16);
+  }
+  if (chat.showing) {
+    ctx.fillStyle = 'darkgrey';
+    ctx.fillRect(0, canv.height - 30, canv.width, 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.fillRect(0, canv.height - 30, canv.width, 28);
+    ctx.fillStyle = 'black';
+    ctx.font = '12px monospace';
+    ctx.fillText(chat.message, 10, canv.height - 10);
+  }
+});
 
 function drawGrid(ctx, tiles, tileSize = 8, offset = 1, col = 'white') {
   for (let x = 0; x < tiles; x++) {
@@ -103,6 +95,8 @@ function drawSnake(ctx, snakeObj, tiles, tileSize = 8, offset = 1) {
   ctx.fillStyle = snakeObj.col;
   snakeObj.blocks.forEach(block => {
     ctx.fillStyle = snakeObj.col;
+    ctx.strokeStyle = snakeObj.col;
+    ctx.strokeRect(block.x * tileSize, block.y * tileSize, tileSize, tileSize);
     ctx.beginPath();
     ctx.arc(
       block.x * tileSize + tileSize / 2,
