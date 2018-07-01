@@ -33,6 +33,13 @@ const checkProximity = (x1, y1, x2, y2, leeway) => {
 
 io.on('connection', con => {
   console.log(con.id, 'made connection');
+  messages.push({
+    id: con.id,
+    col: 'blue',
+    message: '## Welcome new snek! ##',
+    name: 'SYS',
+    life: 50
+  });
   snakes.push({
     id: con.id,
     blocks: [
@@ -83,14 +90,25 @@ io.on('connection', con => {
   con.on('disconnecting', reason => {
     console.log(con.id, 'disconnecting');
     snakes = snakes.filter(snake => snake.id !== con.id);
+    messages.push({
+      id: con.id,
+      col: 'blue',
+      message: '## Goodbye fellow snek! ##',
+      name: 'SYS',
+      life: 50
+    });
   });
   con.on('message', data => {
-    const newMsg = {
+    let newMsg = {
       id: con.id,
       col: snakes.filter(snake => snake.id === con.id)[0].col,
       message: data,
+      name: undefined,
       life: 50
     };
+    if (snakes.filter(snake => snake.id === con.id)[0].name !== undefined) {
+      newMsg.name = snakes.filter(snake => snake.id === con.id)[0].name;
+    }
     messages.push(newMsg);
     snake = snakes.filter(snake => snake.id === con.id)[0];
     if (snake !== null) {
@@ -99,11 +117,30 @@ io.on('connection', con => {
     }
     console.log('>>', con.id, data);
   });
+  con.on('name', data => {
+    const newMsg = {
+      id: con.id,
+      col: 'blue',
+      message: 'Snek changed their name!',
+      name: 'SYS',
+      life: 50
+    };
+    messages.push(newMsg);
+    snakes.filter(snake => snake.id === con.id)[0].name = data
+      .slice(0, 3)
+      .toUpperCase();
+    console.log(snakes.map(snk => snk.name));
+  });
 });
 
 ticker = 0;
+
 setInterval(() => {
-  ticker++;
+  if (messages.length === 0) {
+    ticker = 0;
+  } else {
+    ticker++;
+  }
   snakes.forEach(snake => {
     if (!snake.dead) {
       const newX =
@@ -145,10 +182,24 @@ setInterval(() => {
               1
             )
           ) {
-            snake.len += i + 1;
-            snake2.len -= i + 1;
-            snake2.blocks.splice(0, i);
-            break;
+            if (i < snake2.len - 1) {
+              snake.len += i + 1;
+              snake2.len -= i + 1;
+              snake2.blocks.splice(0, i);
+              break;
+            } else {
+              if (snake2.len > snake.len) {
+                snake2.len += snake.len - 1;
+                snake.len = 1;
+              } else if (snake2.len < snake.len) {
+                snake.len += snake2.len - 1;
+                snake2.len = 1;
+              }
+              snake.dx = -snake.dx;
+              snake.dy = -snake.dy;
+              snake2.dx = -snake2.dx;
+              snake2.dy = -snake2.dy;
+            }
           }
         }
       });

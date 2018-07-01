@@ -30,7 +30,8 @@ socket.on('data', data => {
   snakes = data.snakes;
   food = data.food;
   messages = data.messages;
-  // canvas scene
+
+  // snakes
   ctx.scale(scale, scale);
   ctx.clearRect(0, 0, canv.width, canv.height);
   ctx.fillRect(0, 0, canv.width, canv.height);
@@ -59,13 +60,18 @@ socket.on('data', data => {
     }
   });
   ctx.scale(1 / scale, 1 / scale);
+
   // scores
   for (let i = 0; i < snakes.length; i++) {
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillRect(5, 15 + i * 40, 20 + 24 * `${snakes[i].len}`.length, 30);
     ctx.fillStyle = snakes[i].col;
     ctx.fillRect(10, 20 + i * 40, 20, 20);
     ctx.font = '24px calibri';
     ctx.fillText(snakes[i].len, 40, 20 + i * 40 + 16);
   }
+
+  // chat
   if (chat.showing) {
     ctx.fillStyle = 'darkgrey';
     ctx.fillRect(0, canv.height - 30, canv.width, 2);
@@ -80,15 +86,20 @@ socket.on('data', data => {
   // messages
   for (let i = 0; i < messages.length; i++) {
     ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.fillRect(290, 40 + i * 68, messages[i].message.length * 38 + 50, 110);
+    ctx.fillRect(290, 40 + i * 68, messages[i].message.length * 38 + 200, 80);
     ctx.lineWidth = 4;
-    ctx.fillStyle = messages[i].col;
-    ctx.fillRect(300, 60 + i * 68, 40, 40);
     ctx.font = '68px monospace';
     ctx.fillStyle = 'black';
-    ctx.fillText(messages[i].message, 360 + 4, 80 + i * 68 + 20);
+    ctx.fillText(messages[i].message, 460 + 4, 80 + i * 68 + 20);
     ctx.fillStyle = messages[i].col;
-    ctx.fillText(messages[i].message, 360, 80 + i * 68 + 16);
+    ctx.fillText(messages[i].message, 460, 80 + i * 68 + 16);
+    if (messages[i].name !== undefined) {
+      ctx.fillStyle = messages[i].col;
+      ctx.fillText(messages[i].name, 310, 80 + i * 68 + 16);
+    } else {
+      ctx.fillStyle = messages[i].col;
+      ctx.fillRect(300, 60 + i * 68, 68 * 2, 40);
+    }
   }
   ctx.scale(1 / scale, 1 / scale);
 });
@@ -161,9 +172,19 @@ window.addEventListener('keydown', e => {
   } else {
     if (e.keyCode === 13) {
       if (chat.message.length > 0) {
-        while (chat.message.length > 0) {
-          socket.emit('message', chat.message.slice(0, 64));
-          chat.message = chat.message.slice(32, chat.message.length);
+        if (chat.message.startsWith('/name')) {
+          const name = chat.message.slice(
+            chat.message.indexOf(' ') + 1,
+            chat.message.length
+          );
+          if (name.length > 0) {
+            socket.emit('name', name);
+          }
+        } else {
+          while (chat.message.length > 0) {
+            socket.emit('message', chat.message.slice(0, 64));
+            chat.message = chat.message.slice(32, chat.message.length);
+          }
         }
       }
       chat.message = null;
