@@ -130,7 +130,6 @@ io.on('connection', con => {
     snakes.filter(snake => snake.id === con.id)[0].name = data
       .slice(0, 3)
       .toUpperCase();
-    console.log(snakes.map(snk => snk.name));
   });
 });
 
