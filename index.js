@@ -312,4 +312,4 @@ setInterval(() => {
   }
 
   io.sockets.emit('data', data);
-}, 1000 / 12);
+}, 1000 / 18);
