@@ -41,13 +41,15 @@ socket.on('data', data => {
 
   // first time
   if (first) {
-    handleCommand(
-      `/col rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() *
-        255},1)`
-    );
-    handleCommand('/food 0');
+    if (socket !== null) {
+      handleCommand(
+        `/col rgba(${Math.random() * 255},${Math.random() *
+          255},${Math.random() * 255},1)`
+      );
+      handleCommand('/food 0');
 
-    first = false;
+      first = false;
+    }
   }
 
   // snakes
