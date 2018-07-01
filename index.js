@@ -105,7 +105,7 @@ io.on('connection', con => {
       col: snakes.filter(snake => snake.id === con.id)[0].col,
       message: data,
       name: undefined,
-      life: 50
+      life: 150
     };
     if (snakes.filter(snake => snake.id === con.id)[0].name !== undefined) {
       newMsg.name = snakes.filter(snake => snake.id === con.id)[0].name;
