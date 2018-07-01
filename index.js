@@ -97,6 +97,7 @@ io.on('connection', con => {
       name: 'SYS',
       life: 50
     });
+    food.splice(0, foodPerSnek);
   });
   con.on('message', data => {
     let newMsg = {
