@@ -2,10 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-// console.log('connecting to http://139.59.164.28:8080');
-// socket = io.connect('http://139.59.164.28:8080/');
-console.log('connecting to http://localhost:8080/');
-socket = io.connect('http://localhost:8080/');
+console.log('connecting to http://139.59.164.28:8080');
+socket = io.connect('http://139.59.164.28:8080/');
+// console.log('connecting to http://localhost:8080/');
+// socket = io.connect('http://localhost:8080/');
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
@@ -188,8 +188,6 @@ function drawTouchArrows(ctx, x1, y1, x2, y2) {
 
 window.addEventListener('touchend', e => {
   const touch = e.changedTouches[0];
-  // console.log(touch.pageX, touch.pageY);
-
   const x = 0;
   const y = meta.tiles * meta.tileSize * scale;
   const xDist = Math.abs(meta.tiles * meta.tileSize * scale - x);
@@ -224,18 +222,15 @@ window.addEventListener('touchend', e => {
     dir: 'r'
   });
   blocks.forEach(block => {
-    console.log(block.dir, block.x1, block.y1, block.x2, block.y2);
     if (
       block.x1 < touch.pageX &&
       block.x2 > touch.pageX &&
       block.y1 < touch.pageY &&
       block.y2 > touch.pageY
     ) {
-      // console.log(block.dir);
       socket.emit('move', block.dir);
     }
   });
-  console.log(touch.pageX, touch.pageY);
 });
 
 window.addEventListener('keydown', e => {
