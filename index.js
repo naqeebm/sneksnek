@@ -207,11 +207,9 @@ io.on('connection', con => {
         killSnake(snakes.filter(snk => snk.id === con.id)[0]);
         break;
       case 'comp':
-        console.log('comp');
         snakes.push(newSnake(-1, 'COMP'));
         break;
       case 'delcomp':
-        console.log('delcomp');
         snakes.filter(snk => snk.id === -1).map(snk => {
           snk.dead = true;
           snk.id = null;
