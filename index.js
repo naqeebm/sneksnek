@@ -156,11 +156,11 @@ io.on('connection', con => {
     snakes.filter(snake => snake.id === con.id)[0].col = data;
   });
 
-  if (snakes.length >= scaleFacter * 4) {
-    scaleFacter += 0.1;
-    tiles = Math.floor(tiles * scaleFacter);
-    tileSize = Math.floor(tileSize / scaleFacter);
-  }
+  // if (snakes.length >= scaleFacter * 4) {
+  //   scaleFacter += 0.1;
+  //   tiles = Math.floor(tiles * scaleFacter);
+  //   tileSize = Math.floor(tileSize / scaleFacter);
+  // }
 });
 
 ticker = 0;
