@@ -11,9 +11,10 @@ app.use(express.static('public'));
 var io = socket(server);
 
 let snakes = [];
+
 let food = [];
 let messages = [];
-let scaleFacter = 1;
+let scaleFacter = 1.5;
 
 let tiles = 48 * scaleFacter;
 let tileSize = 128 / scaleFacter;
@@ -22,6 +23,7 @@ const foodPerSnek = 4;
 const moveScale = 1;
 const defaultLength = 4;
 const boostFactor = 1;
+const foodMaxWeight = 25;
 
 const checkProximity = (x1, y1, x2, y2, leeway) => {
   len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -40,22 +42,15 @@ const newFood = (
   return {
     x,
     y,
+    weight: perishable ? 1 : Math.floor(Math.random() * foodMaxWeight),
     size: tileSize,
     perishable
   };
 };
 
-io.on('connection', con => {
-  console.log(con.id, 'made connection');
-  messages.push({
-    id: con.id,
-    col: 'blue',
-    message: '## Welcome new snek! ##',
-    name: 'SYS',
-    life: 50
-  });
-  snakes.push({
-    id: con.id,
+const newSnake = (id, name = 'snek' + snakes.length) => {
+  return {
+    id,
     blocks: [
       {
         x: Math.floor(Math.random() * tiles),
@@ -70,8 +65,58 @@ io.on('connection', con => {
     message: null,
     dead: false,
     boost: false,
-    name: 'snek' + snakes.length
+    name
+  };
+};
+
+const killSnake = snake => {
+  const name = snake.name;
+  const id = snake.id;
+  setTimeout(() => {
+    snakes.push({
+      id: id,
+      blocks: [
+        {
+          x: Math.floor(Math.random() * tiles),
+          y: Math.floor(Math.random() * tiles)
+        }
+      ],
+      dx: 1,
+      dy: 0,
+      len: defaultLength,
+      col: `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() *
+        255})`,
+      message: null,
+      name: name,
+      dead: false,
+      boost: false
+    });
+  }, 2500);
+
+  messages.push({
+    id: snake.id,
+    col: snake.col,
+    message: '## Snek ' + snake.name + ' died!',
+    name: snake.name,
+    life: 50
   });
+  snake.dead = true;
+  snake.id = null;
+  snake.name = 'X_X';
+  snake.col = 'rgba(0,0,0,0.5)';
+};
+
+io.on('connection', con => {
+  console.log(con.id, 'made connection');
+  messages.push({
+    id: con.id,
+    col: 'blue',
+    message: '## Welcome new snek! ##',
+    name: 'SYS',
+    life: 50
+  });
+  snakes.push(newSnake(con.id));
+
   for (let i = 0; i < foodPerSnek; i++) {
     food.push(newFood());
   }
@@ -156,6 +201,28 @@ io.on('connection', con => {
     snakes.filter(snake => snake.id === con.id)[0].col = data;
   });
 
+  con.on('request', data => {
+    switch (data) {
+      case 'kms':
+        killSnake(snakes.filter(snk => snk.id === con.id)[0]);
+        break;
+      case 'comp':
+        console.log('comp');
+        snakes.push(newSnake(-1, 'COMP'));
+        break;
+      case 'delcomp':
+        console.log('delcomp');
+        snakes.filter(snk => snk.id === -1).map(snk => {
+          snk.dead = true;
+          snk.id = null;
+          snk.col = 'darkslategrey';
+          snk.name = 'X_X';
+        });
+      default:
+        break;
+    }
+  });
+
   // if (snakes.length >= scaleFacter * 4) {
   //   scaleFacter += 0.1;
   //   tiles = Math.floor(tiles * scaleFacter);
@@ -185,12 +252,13 @@ setInterval(() => {
         tiles;
       food.forEach(fud => {
         if (checkProximity(fud.x, fud.y, newX, newY, 1) === true) {
-          snake.len++;
+          snake.len += fud.weight;
           if (fud.perishable) {
             food = food.filter(f => !(f.x === fud.x && f.y === fud.y));
           } else {
             fud.x = Math.floor(Math.random() * tiles);
             fud.y = Math.floor(Math.random() * tiles);
+            fud.weight = Math.floor(Math.random() * foodMaxWeight);
           }
         }
       });
@@ -213,58 +281,31 @@ setInterval(() => {
               )
             ) {
               if (i === snake2.len - 1) {
-                // dead snek
-                snakes.push({
-                  id: snake2.id,
-                  blocks: [
-                    {
-                      x: Math.floor(Math.random() * tiles),
-                      y: Math.floor(Math.random() * tiles)
-                    }
-                  ],
-                  dx: 1,
-                  dy: 0,
-                  len: defaultLength,
-                  col: `rgb(${Math.random() * 255},${Math.random() *
-                    255},${Math.random() * 255})`,
-                  message: null,
-                  name: snake2.name,
-                  dead: false,
-                  boost: false
-                });
-                messages.push({
-                  id: snake2.id,
-                  col: snake2.col,
-                  message: '## Snek died!',
-                  name: snake2.name,
-                  life: 50
-                });
-                snake2.dead = true;
-                snake2.id = null;
-                snake2.name = 'X_X';
-                snake2.col = 'rgba(0,0,0,0.5)';
-                snake.len += snake.len;
-              } else if (i < snake2.len - 1) {
-                snake.len += i + 1;
-                snake2.len -= i + 1;
-                snake2.blocks.splice(0, i);
-                break;
-              } else {
-                if (snake2.len > snake.len) {
-                  snake2.len += snake.len;
-                  snake.len = 1;
-                } else if (snake2.len < snake.len) {
+                if (snake.len > snake2.len) {
                   snake.len += snake2.len;
-                  snake2.len = 1;
+                  killSnake(snake2);
+                } else if (snake.len < snake2.len) {
+                  snake2.len += snake.len;
+                  killSnake(snake);
                 }
-                snake.dx = -snake.dx;
-                snake.dy = -snake.dy;
-                snake2.dx = -snake2.dx;
-                snake2.dy = -snake2.dy;
               }
+              snake.dx = -snake.dx;
+              snake.dy = -snake.dy;
             }
           }
         });
+      // self collision
+      const ownBlocks = snake.blocks;
+      for (let i = 0; i < ownBlocks.length - 2; i++) {
+        if (checkProximity(ownBlocks[i].x, ownBlocks[i].y, newX, newY, 1)) {
+          for (let j = 0; j <= i; j++) {
+            food.push(newFood(snake.blocks[0].x, snake.blocks[0].y, true));
+            snake.blocks.splice(0, 1);
+            snake.len--;
+          }
+          break;
+        }
+      }
       // boost handler
       if (snake.boost) {
         if (snake.len > 5) {
@@ -297,17 +338,21 @@ setInterval(() => {
   });
 
   if (messages.length > 10) {
-    if (ticker > 50) {
+    if (ticker > 10) {
       messages.splice(0, 1);
     }
   } else {
-    if (ticker > 500) {
+    if (ticker > 100) {
       let ded = snakes.filter(snk => snk.dead);
       if (ded.length > 0) {
         snakes = snakes.filter(snk => snk.id !== ded[0].id);
       }
       messages.splice(0, 1);
       ticker = 0;
+
+      snakes.forEach(snk => {
+        snk.len = snk.blocks.length;
+      });
     }
   }
 

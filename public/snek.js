@@ -77,13 +77,33 @@ socket.on('data', data => {
     );
     // snake message
     if (snake.message !== null) {
-      ctx.fillStyle = `rgba(0,0,128,${snake.message.life / 25})`;
-      ctx.font = `${meta.tileSize * 2}px monospace`;
-      ctx.fillText(
-        `${snake.message.message}`,
-        snake.blocks[snake.blocks.length - 1].x * data.meta.tileSize,
-        snake.blocks[snake.blocks.length - 1].y * data.meta.tileSize - 5
-      );
+      let message = snake.message.message;
+      if (message.length > 16) {
+        let msgs = [];
+        while (message.length > 0) {
+          msgs.push(message.slice(0, 16));
+          message = message.slice(16, message.length);
+        }
+        for (let i = 0; i < msgs.length; i++) {
+          ctx.fillStyle = `rgba(0,0,128,${snake.message.life / 25})`;
+          ctx.font = `${meta.tileSize * 2}px monospace`;
+          ctx.fillText(
+            `${msgs[i]}`,
+            snake.blocks[snake.blocks.length - 1].x * data.meta.tileSize,
+            snake.blocks[snake.blocks.length - 1].y * data.meta.tileSize -
+              5 -
+              (msgs.length - (i + 1)) * 200
+          );
+        }
+      } else {
+        ctx.fillStyle = `rgba(0,0,128,${snake.message.life / 25})`;
+        ctx.font = `${meta.tileSize * 2}px monospace`;
+        ctx.fillText(
+          `${snake.message.message}`,
+          snake.blocks[snake.blocks.length - 1].x * data.meta.tileSize,
+          snake.blocks[snake.blocks.length - 1].y * data.meta.tileSize - 5
+        );
+      }
     }
   });
 
@@ -279,7 +299,15 @@ function drawFood(ctx, food, tileSize = 8, offset = 1) {
     if (foodStyle === 1) {
       ctx.fillStyle = `rgb(255,${Math.random() * 255},${Math.random() * 255})`;
     } else {
-      ctx.fillStyle = 'red';
+      if (food.weight > 20) {
+        ctx.fillStyle = 'voilet';
+      } else if (food.weight > 10) {
+        ctx.fillStyle = 'blue';
+      } else if (food.weight > 5) {
+        ctx.fillStyle = 'green';
+      } else {
+        ctx.fillStyle = 'red';
+      }
     }
     ctx.fillRect(
       food.x * tileSize,
@@ -346,6 +374,11 @@ function handleCommand(message) {
       break;
     case '/names':
       showNames = !showNames;
+      break;
+    case '/req':
+      if (arg.length > 0) {
+        socket.emit('request', arg);
+      }
       break;
     default:
       break;
@@ -453,7 +486,7 @@ window.addEventListener('keydown', e => {
         } else {
           while (chat.message.length > 0) {
             socket.emit('message', chat.message.slice(0, 64));
-            chat.message = chat.message.slice(32, chat.message.length);
+            chat.message = chat.message.slice(64, chat.message.length);
           }
         }
       }
@@ -465,15 +498,17 @@ window.addEventListener('keydown', e => {
       chat.message = null;
       chat.showing = false;
     } else {
-      if (
-        (e.keyCode > 47 && e.keyCode < 58) ||
-        e.keyCode == 32 ||
-        (e.keyCode > 64 && e.keyCode < 91) ||
-        (e.keyCode > 95 && e.keyCode < 112) ||
-        (e.keyCode > 185 && e.keyCode < 193) ||
-        (e.keyCode > 218 && e.keyCode < 223)
-      ) {
-        chat.message += e.key;
+      if (chat.message.length < 64) {
+        if (
+          (e.keyCode > 47 && e.keyCode < 58) ||
+          e.keyCode == 32 ||
+          (e.keyCode > 64 && e.keyCode < 91) ||
+          (e.keyCode > 95 && e.keyCode < 112) ||
+          (e.keyCode > 185 && e.keyCode < 193) ||
+          (e.keyCode > 218 && e.keyCode < 223)
+        ) {
+          chat.message += e.key;
+        }
       }
     }
   }
