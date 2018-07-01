@@ -10,6 +10,8 @@ socket = io.connect('http://139.59.164.28:8080/');
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
 
+let first = true;
+
 let snakes = [];
 let food = [];
 let messages = [];
@@ -36,6 +38,17 @@ socket.on('data', data => {
   food = data.food;
   messages = data.messages;
   meta = data.meta;
+
+  // first time
+  if (first) {
+    handleCommand(
+      `/col rgba(${Math.random() * 255},${Math.random() * 255},${Math.random() *
+        255},1)`
+    );
+    handleCommand('/food 0');
+
+    first = false;
+  }
 
   // snakes
   ctx.scale(scale, scale);
@@ -79,7 +92,8 @@ socket.on('data', data => {
     document.documentElement.clientWidth ===
     data.meta.tiles * data.meta.tileSize * scale
   ) {
-    if (document.getElementById('controls').style.display !== 'none') {
+    if (first) {
+      handleCommand('/name MobileU' + snakes.length);
       document.getElementById('controls').style.display = 'none';
     }
     drawTouchArrows(
