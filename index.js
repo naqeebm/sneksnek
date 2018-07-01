@@ -69,7 +69,8 @@ io.on('connection', con => {
       255})`,
     message: null,
     dead: false,
-    boost: false
+    boost: false,
+    name: 'snek' + snakes.length
   });
   for (let i = 0; i < foodPerSnek; i++) {
     food.push(newFood());
@@ -77,33 +78,35 @@ io.on('connection', con => {
 
   con.on('move', data => {
     const snake = snakes.filter(snake => snake.id === con.id)[0];
-    switch (data) {
-      case 'u':
-        snake.dx = 0;
-        snake.dy = -1;
-        break;
-      case 'l':
-        snake.dx = -1;
-        snake.dy = 0;
-        break;
-      case 'd':
-        snake.dx = 0;
-        snake.dy = 1;
-        break;
-      case 'r':
-        snake.dx = 1;
-        snake.dy = 0;
-        break;
-      case 'boost':
-        if (snake.len > 1) {
-          if (!snake.boost) {
-            snake.boost = true;
-          } else {
-            snake.boost = false;
+    if (snake !== undefined) {
+      switch (data) {
+        case 'u':
+          snake.dx = 0;
+          snake.dy = -1;
+          break;
+        case 'l':
+          snake.dx = -1;
+          snake.dy = 0;
+          break;
+        case 'd':
+          snake.dx = 0;
+          snake.dy = 1;
+          break;
+        case 'r':
+          snake.dx = 1;
+          snake.dy = 0;
+          break;
+        case 'boost':
+          if (snake.len > 1) {
+            if (!snake.boost) {
+              snake.boost = true;
+            } else {
+              snake.boost = false;
+            }
           }
-        }
-      default:
-        break;
+        default:
+          break;
+      }
     }
   });
   con.on('disconnecting', reason => {
@@ -195,52 +198,87 @@ setInterval(() => {
       while (snake.blocks.length > snake.len) {
         snake.blocks.splice(0, 1);
       }
-      snakes.filter(snk => snk.id !== snake.id).forEach(snake2 => {
-        for (let i = 0; i < snake2.blocks.length; i++) {
-          if (
-            checkProximity(
-              snake2.blocks[i].x,
-              snake2.blocks[i].y,
-              newX,
-              newY,
-              1
-            )
-          ) {
-            if (i < snake2.len - 1) {
-              snake.len += i + 1;
-              snake2.len -= i + 1;
-              snake2.blocks.splice(0, i);
-              break;
-            } else {
-              if (snake2.len > snake.len) {
-                snake2.len += snake.len - 1;
-                snake.len = 1;
-              } else if (snake2.len < snake.len) {
-                snake.len += snake2.len - 1;
-                snake2.len = 1;
+      snakes
+        .filter(snk => !snk.dead)
+        .filter(snk => snk.id !== snake.id)
+        .forEach(snake2 => {
+          for (let i = 0; i < snake2.blocks.length; i++) {
+            if (
+              checkProximity(
+                snake2.blocks[i].x,
+                snake2.blocks[i].y,
+                newX,
+                newY,
+                1
+              )
+            ) {
+              if (i === snake2.len - 1) {
+                // dead snek
+                snakes.push({
+                  id: snake2.id,
+                  blocks: [
+                    {
+                      x: Math.floor(Math.random() * tiles),
+                      y: Math.floor(Math.random() * tiles)
+                    }
+                  ],
+                  dx: 1,
+                  dy: 0,
+                  len: defaultLength,
+                  col: `rgb(${Math.random() * 255},${Math.random() *
+                    255},${Math.random() * 255})`,
+                  message: null,
+                  name: snake2.name,
+                  dead: false,
+                  boost: false
+                });
+                messages.push({
+                  id: snake2.id,
+                  col: snake2.col,
+                  message: '## Snek died!',
+                  name: snake2.name,
+                  life: 50
+                });
+                snake2.dead = true;
+                snake2.id = null;
+                snake2.name = 'X_X';
+                snake2.col = 'rgba(0,0,0,0.5)';
+                snake.len += snake.len;
+              } else if (i < snake2.len - 1) {
+                snake.len += i + 1;
+                snake2.len -= i + 1;
+                snake2.blocks.splice(0, i);
+                break;
+              } else {
+                if (snake2.len > snake.len) {
+                  snake2.len += snake.len;
+                  snake.len = 1;
+                } else if (snake2.len < snake.len) {
+                  snake.len += snake2.len;
+                  snake2.len = 1;
+                }
+                snake.dx = -snake.dx;
+                snake.dy = -snake.dy;
+                snake2.dx = -snake2.dx;
+                snake2.dy = -snake2.dy;
               }
-              snake.dx = -snake.dx;
-              snake.dy = -snake.dy;
-              snake2.dx = -snake2.dx;
-              snake2.dy = -snake2.dy;
             }
           }
+        });
+      // boost handler
+      if (snake.boost) {
+        if (snake.len > 5) {
+          for (let i = 0; i < boostFactor; i++) {
+            snake.blocks.push({
+              x: snake.blocks[snake.blocks.length - 1].x + snake.dx,
+              y: snake.blocks[snake.blocks.length - 1].y + snake.dy
+            });
+            snake.len--;
+            food.push(newFood(snake.blocks[0].x, snake.blocks[0].y, true));
+          }
+        } else {
+          snake.boost = false;
         }
-      });
-    }
-    // boost handler
-    if (snake.boost) {
-      if (snake.len > 5) {
-        for (let i = 0; i < boostFactor; i++) {
-          snake.blocks.push({
-            x: snake.blocks[snake.blocks.length - 1].x + snake.dx,
-            y: snake.blocks[snake.blocks.length - 1].y + snake.dy
-          });
-          snake.len--;
-          food.push(newFood(snake.blocks[0].x, snake.blocks[0].y, true));
-        }
-      } else {
-        snake.boost = false;
       }
     }
   });
@@ -264,6 +302,10 @@ setInterval(() => {
     }
   } else {
     if (ticker > 500) {
+      let ded = snakes.filter(snk => snk.dead);
+      if (ded.length > 0) {
+        snakes = snakes.filter(snk => snk.id !== ded[0].id);
+      }
       messages.splice(0, 1);
       ticker = 0;
     }
