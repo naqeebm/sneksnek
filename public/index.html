@@ -5,11 +5,107 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.dev.js"></script>
+  <style>
+    td {
+      border: 1px solid black;
+      background: white;
+      font-style: italic;
+    }
+  </style>
   <title>Snek</title>
 </head>
 
 <body style='margin: 0 0; padding: 0 0;display:flex;background-color: grey;'>
   <canvas tab-index=0 id="canv"></canvas>
+  <div style='position: fixed;left:50%;' onclick="this.style.display='none';" id='controls'>
+    <p>
+      <table>
+        <tr>
+          <td>
+            <b>Controls (click to hide)</b>
+          </td>
+        </tr>
+
+        <tr>
+          <td>w
+            <td></td>
+            <td> Up</td>
+        </tr>
+
+        <tr>
+          <td>a
+            <td></td>
+            <td> Left</td>
+        </tr>
+
+        <tr>
+          <td>s
+            <td></td>
+            <td> Down</td>
+        </tr>
+
+        <tr>
+          <td>d
+            <td></td>
+            <td> Right</td>
+        </tr>
+
+        <tr>
+          <td>Space
+            <td></td>
+            <td> Toggle boost</td>
+        </tr>
+
+        <tr>
+          <td>Enter
+            <td></td>
+            <td> toggle messagebox</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Commands</b>
+          </td>
+        </tr>
+
+        <tr>
+          <td>/name [new name]
+            <td></td>
+            <td> change name</td>
+        </tr>
+
+        <tr>
+          <td>/col [new web col]
+            <td></td>
+            <td> change snake colour</td>
+        </tr>
+
+        <tr>
+          <td>/bgcol [new web col]
+            <td></td>
+            <td> change local background colour</td>
+        </tr>
+
+        <tr>
+          <td>/names
+            <td></td>
+            <td> toggle names</td>
+        </tr>
+
+        <tr>
+          <td>/food [0|1]
+            <td></td>
+            <td> change food appearance (0 = simplest)</td>
+        </tr>
+
+        <tr>
+          <td>/snake [string of: H - highlight|C - Circles|L - lines]
+            <td></td>
+            <td> change local snake appearance.</td>
+        </tr>
+      </table>
+
+    </p>
+  </div>
   <script src="./snek.js"></script>
 </body>
 

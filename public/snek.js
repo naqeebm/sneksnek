@@ -2,10 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://139.59.164.28:8080');
-socket = io.connect('http://139.59.164.28:8080/');
-// console.log('connecting to http://localhost:8080/');
-// socket = io.connect('http://localhost:8080/');
+// console.log('connecting to http://139.59.164.28:8080');
+// socket = io.connect('http://139.59.164.28:8080/');
+console.log('connecting to http://localhost:8080/');
+socket = io.connect('http://localhost:8080/');
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
@@ -13,14 +13,17 @@ canv.width = document.documentElement.clientWidth;
 let snakes = [];
 let food = [];
 let messages = [];
-
 let meta = null;
+
 let scale = 1;
+let snakeStyle = 'LCH';
+let foodStyle = 1;
+let bgCol = 'white';
+let showNames = true;
 
 let chat = { showing: false, message: null };
 
 ctx.fillRect(0, 0, canv.width, canv.height);
-
 socket.on('data', data => {
   ctx.clearRect(0, 0, canv.width, canv.height);
   if (canv.height < canv.width) {
@@ -36,7 +39,12 @@ socket.on('data', data => {
 
   // snakes
   ctx.scale(scale, scale);
-  ctx.clearRect(0, 0, canv.width, canv.height);
+  ctx.clearRect(
+    0,
+    0,
+    meta.tiles * meta.tilesize * scale,
+    meta.tiles * meta.tileSize * scale
+  );
   ctx.fillRect(0, 0, canv.width, canv.height);
   drawGrid(ctx, data.meta.tiles, data.meta.tileSize, data.meta.offset);
 
@@ -52,9 +60,10 @@ socket.on('data', data => {
       data.meta.tileSize,
       data.meta.offset
     );
+    // snake message
     if (snake.message !== null) {
-      ctx.fillStyle = `rgba(0,0,0,${snake.message.life / 25})`;
-      ctx.font = `${96}px monospace`;
+      ctx.fillStyle = `rgba(0,0,128,${snake.message.life / 25})`;
+      ctx.font = `${meta.tileSize * 2}px monospace`;
       ctx.fillText(
         `${snake.message.message}`,
         snake.blocks[snake.blocks.length - 1].x * data.meta.tileSize,
@@ -70,6 +79,9 @@ socket.on('data', data => {
     document.documentElement.clientWidth ===
     data.meta.tiles * data.meta.tileSize * scale
   ) {
+    if (document.getElementById('controls').style.display !== 'none') {
+      document.getElementById('controls').style.display = 'none';
+    }
     drawTouchArrows(
       ctx,
       0,
@@ -81,12 +93,17 @@ socket.on('data', data => {
 
   // scores
   for (let i = 0; i < snakes.length; i++) {
-    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.fillRect(5, 15 + i * 40, 20 + 24 * `${snakes[i].len}`.length, 30);
     ctx.fillStyle = snakes[i].col;
     ctx.fillRect(10, 20 + i * 40, 20, 20);
     ctx.font = '24px calibri';
     ctx.fillText(snakes[i].len, 40, 20 + i * 40 + 16);
+    if (snakes[i].name !== undefined) {
+      ctx.font = `12px sans-serif`;
+      ctx.fillStyle = 'white';
+      ctx.fillText(snakes[i].name.slice(0, 2), 12, 36 + i * 40);
+    }
   }
 
   // chat
@@ -99,30 +116,39 @@ socket.on('data', data => {
     ctx.font = '16px monospace';
     ctx.fillText(chat.message, 10, canv.height - 10);
   }
-  ctx.scale(scale, scale);
 
   // messages
   for (let i = 0; i < messages.length; i++) {
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.fillRect(290, 40 + i * 68, messages[i].message.length * 38 + 200, 80);
+    // back
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillRect(80, 18 + i * 16, messages[i].message.length * 10 + 66, 16);
     ctx.lineWidth = 4;
-    ctx.font = '68px monospace';
-    ctx.fillStyle = 'black';
-    ctx.fillText(messages[i].message, 460 + 4, 80 + i * 68 + 20);
+    // msg
+    ctx.font = '16px monospace';
     ctx.fillStyle = messages[i].col;
-    ctx.fillText(messages[i].message, 460, 80 + i * 68 + 16);
+    ctx.fillText(messages[i].message, 130, 15 + i * 16 + 16);
     if (messages[i].name !== undefined) {
+      // name
       ctx.fillStyle = messages[i].col;
-      ctx.fillText(messages[i].name, 310, 80 + i * 68 + 16);
+      ctx.fillText(messages[i].name.slice(0, 3), 85, 15 + i * 16 + 16);
     } else {
+      // block
       ctx.fillStyle = messages[i].col;
-      ctx.fillRect(300, 60 + i * 68, 68 * 2, 40);
+      ctx.fillRect(85, 20 + i * 16, 16 * 2, 10);
     }
   }
-  ctx.scale(1 / scale, 1 / scale);
 });
 
-function drawGrid(ctx, tiles, tileSize = 8, offset = 1, col = 'white') {
+const checkProximity = (x1, y1, x2, y2, leeway) => {
+  len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+  if (Math.abs(len) < leeway) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
+function drawGrid(ctx, tiles, tileSize = 8, offset = 1, col = bgCol) {
   for (let x = 0; x < tiles; x++) {
     for (let y = 0; y < tiles; y++) {
       ctx.fillStyle = col;
@@ -137,39 +163,108 @@ function drawGrid(ctx, tiles, tileSize = 8, offset = 1, col = 'white') {
 }
 
 function drawSnake(ctx, snakeObj, tiles, tileSize = 8, offset = 1) {
-  ctx.fillStyle = snakeObj.col;
+  // first 2 blocks affected
+  let i = 0;
+  let prev = {
+    x: snakeObj.blocks[0].x * tileSize + tileSize / 2,
+    y: snakeObj.blocks[0].y * tileSize + tileSize / 2
+  };
+  ctx.lineCap = 'round';
   snakeObj.blocks.forEach(block => {
-    ctx.fillStyle = snakeObj.col;
-    ctx.strokeStyle = snakeObj.col;
-    // ctx.strokeRect(block.x * tileSize, block.y * tileSize, tileSize, tileSize);
+    const x = block.x * tileSize + tileSize / 2;
+    const y = block.y * tileSize + tileSize / 2;
+    let sizeOffset = Math.max(Math.abs(block.size - tileSize / 2 - i), 10);
+    // lines
+    if (snakeStyle.indexOf('L') !== -1) {
+      if (checkProximity(x, y, prev.x, prev.y, 2 * tileSize)) {
+        ctx.strokeStyle = snakeObj.col;
+        ctx.lineWidth = block.size - sizeOffset - offset;
+        ctx.beginPath();
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(x, y);
+        ctx.closePath();
+        ctx.stroke();
+      }
+    }
+    prev.x = x;
+    prev.y = y;
+
+    // circles
+    if (snakeStyle.indexOf('C') !== -1) {
+      ctx.fillStyle = snakeObj.col;
+      ctx.strokeStyle = snakeObj.col;
+      ctx.beginPath();
+      ctx.arc(
+        block.x * tileSize + tileSize / 2,
+        block.y * tileSize + tileSize / 2,
+        (block.size - sizeOffset - offset) / 2,
+        0,
+        2 * Math.PI
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+    i++;
+  });
+  // highlight
+  if (snakeStyle.indexOf('H') !== -1) {
+    const head = snakeObj.blocks[snakeObj.blocks.length - 1];
     ctx.beginPath();
     ctx.arc(
-      block.x * tileSize + tileSize / 2,
-      block.y * tileSize + tileSize / 2,
-      block.size / 2 - offset,
+      head.x * tileSize + (3 * tileSize) / 8,
+      head.y * tileSize + (3 * tileSize) / 8,
+      tileSize / 4 - offset,
       0,
       2 * Math.PI
     );
     ctx.closePath();
+    ctx.fillStyle = 'white';
     ctx.fill();
-  });
+    // name
+    if (showNames) {
+      if (snakeObj.name !== undefined) {
+        ctx.font = `${1600 * scale}px sans-serif`;
+        ctx.fillStyle = snakeObj.col;
+        ctx.fillText(
+          `${snakeObj.name} ☺`,
+          head.x * tileSize - 100 * snakeObj.name.length * 4 * scale,
+          head.y * tileSize + 2400 * scale
+        );
+      }
+    }
+  }
 }
 
 function drawFood(ctx, food, tileSize = 8, offset = 1) {
   if (food.perishable) {
-    ctx.fillStyle = `128,${Math.random() * 255},${Math.random() * 255})`;
     ctx.beginPath();
-    ctx.arc(
-      food.x * tileSize + tileSize / 2,
-      food.y * tileSize + tileSize / 2,
-      tileSize / (Math.random() * 1 + 2),
-      0,
-      2 * Math.PI
-    );
+    if (foodStyle === 1) {
+      ctx.fillStyle = `128,${Math.random() * 255},${Math.random() * 255})`;
+      ctx.arc(
+        food.x * tileSize + tileSize / 2,
+        food.y * tileSize + tileSize / 2,
+        tileSize / (Math.random() * 1 + 2),
+        0,
+        2 * Math.PI
+      );
+    } else {
+      ctx.fillStyle = 'blue';
+      ctx.arc(
+        food.x * tileSize + tileSize / 2,
+        food.y * tileSize + tileSize / 2,
+        tileSize / 4,
+        0,
+        2 * Math.PI
+      );
+    }
     ctx.closePath();
     ctx.fill();
   } else {
-    ctx.fillStyle = `rgb(255,${Math.random() * 255},${Math.random() * 255})`;
+    if (foodStyle === 1) {
+      ctx.fillStyle = `rgb(255,${Math.random() * 255},${Math.random() * 255})`;
+    } else {
+      ctx.fillStyle = 'red';
+    }
     ctx.fillRect(
       food.x * tileSize,
       food.y * tileSize,
@@ -182,8 +277,8 @@ function drawFood(ctx, food, tileSize = 8, offset = 1) {
 function drawTouchArrows(ctx, x1, y1, x2, y2) {
   const xDist = Math.abs(x2 - x1);
   const yDist = Math.abs(y2 - y1);
-  ctx.fillStyle = 'black';
   ctx.strokeStyle = 'white';
+  ctx.lineWidth = 2;
 
   ctx.strokeRect(x1, y1, xDist, yDist);
 
@@ -192,12 +287,53 @@ function drawTouchArrows(ctx, x1, y1, x2, y2) {
   ctx.strokeRect(x1, y1, 3 * (xDist / 4), yDist);
   ctx.strokeRect(xDist / 4, y1, xDist / 2, yDist / 2);
 
-  ctx.font = '68px arial';
-  ctx.fillStyle = 'lightgrey';
-  ctx.fillText('^', xDist / 2 - 16, y1 + yDist / 4 + 32);
-  ctx.fillText('v', xDist / 2 - 16, y1 + (3 * yDist) / 4 + 16);
-  ctx.fillText('<', xDist / 8 - 16, y1 + yDist / 2 + 16);
-  ctx.fillText('>', 7 * (xDist / 8) - 16, y1 + yDist / 2 + 16);
+  ctx.font = '32px arial';
+  ctx.fillStyle = 'white';
+  ctx.fillText('↑', xDist / 2 - 16, y1 + yDist / 4 + 8);
+  ctx.fillText('↓', xDist / 2 - 16, y1 + (3 * yDist) / 4 + 16);
+  ctx.fillText('←', xDist / 8 - 16, y1 + yDist / 2 + 16);
+  ctx.fillText('→', 7 * (xDist / 8) - 16, y1 + yDist / 2 + 16);
+}
+
+function handleCommand(message) {
+  let command = message.split(' ')[0];
+  let arg = message.slice(command.length + 1, message.length);
+  switch (command) {
+    case '/name':
+      if (arg.length > 0) {
+        socket.emit('name', arg);
+      }
+      break;
+    case '/snake':
+      if (
+        arg.length > 0 &&
+        (arg.indexOf('L') !== -1 || arg.indexOf('C') !== -1)
+      ) {
+        snakeStyle = arg;
+      }
+      break;
+    case '/food':
+      if (arg.length > 0 && Number(arg) !== NaN) {
+        foodStyle = Number(arg);
+      }
+      break;
+    case '/col':
+      if (arg.length > 0) {
+        socket.emit('col', arg);
+      }
+      break;
+
+    case '/bgcol':
+      if (arg.length > 0) {
+        bgCol = arg;
+      }
+      break;
+    case '/names':
+      showNames = !showNames;
+      break;
+    default:
+      break;
+  }
 }
 
 window.addEventListener('touchend', e => {
@@ -235,6 +371,7 @@ window.addEventListener('touchend', e => {
     y2: y + yDist,
     dir: 'r'
   });
+  let found = false;
   blocks.forEach(block => {
     if (
       block.x1 < touch.pageX &&
@@ -243,19 +380,25 @@ window.addEventListener('touchend', e => {
       block.y2 > touch.pageY
     ) {
       socket.emit('move', block.dir);
+      found = true;
     }
   });
-});
-
-window.addEventListener('keyup', e => {
-  {
-    if (!chat.showing) {
-      switch (e.key) {
-        case ' ':
-          console.log('boost finish');
-          break;
-        default:
-          break;
+  if (!found) {
+    if (touch.pageY > yDist / 2) {
+      socket.emit('move', 'boost');
+    } else {
+      if (touch.pageX < xDist / 2) {
+        if (foodStyle === 0) {
+          foodStyle = 1;
+          snakeStyle = 'CLH';
+          showNames = true;
+        } else {
+          snakeStyle = 'LH';
+          foodStyle = 0;
+          showNames = false;
+        }
+      } else {
+        socket.emit('message', 'snek snek');
       }
     }
   }
@@ -277,7 +420,6 @@ window.addEventListener('keydown', e => {
         socket.emit('move', 'r');
         break;
       case ' ':
-        console.log('boost');
         socket.emit('move', 'boost');
         break;
       case 'Enter':
@@ -290,14 +432,8 @@ window.addEventListener('keydown', e => {
   } else {
     if (e.keyCode === 13) {
       if (chat.message.length > 0) {
-        if (chat.message.startsWith('/name')) {
-          const name = chat.message.slice(
-            chat.message.indexOf(' ') + 1,
-            chat.message.length
-          );
-          if (name.length > 0) {
-            socket.emit('name', name);
-          }
+        if (chat.message[0] === '/') {
+          handleCommand(chat.message);
         } else {
           while (chat.message.length > 0) {
             socket.emit('message', chat.message.slice(0, 64));

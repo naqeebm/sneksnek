@@ -13,15 +13,15 @@ var io = socket(server);
 let snakes = [];
 let food = [];
 let messages = [];
-const startTime = null;
+let scaleFacter = 1;
 
-const tiles = 48;
-const tileSize = 64;
+let tiles = 48 * scaleFacter;
+let tileSize = 128 / scaleFacter;
 const offset = 4;
 const foodPerSnek = 4;
 const moveScale = 0.5;
-const defaultLength = 16;
-const boostFactor = 5;
+const defaultLength = 64;
+const boostFactor = 1;
 
 const checkProximity = (x1, y1, x2, y2, leeway) => {
   len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -68,7 +68,8 @@ io.on('connection', con => {
     col: `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() *
       255})`,
     message: null,
-    dead: false
+    dead: false,
+    boost: false
   });
   for (let i = 0; i < foodPerSnek; i++) {
     food.push(newFood());
@@ -95,10 +96,11 @@ io.on('connection', con => {
         break;
       case 'boost':
         if (snake.len > 1) {
-          snake.dx = snake.dx * boostFactor;
-          snake.dy = snake.dy * boostFactor;
-          snake.len--;
-          food.push(newFood(snake.blocks[0].x, snake.blocks[0].y, true));
+          if (!snake.boost) {
+            snake.boost = true;
+          } else {
+            snake.boost = false;
+          }
         }
       default:
         break;
@@ -144,10 +146,18 @@ io.on('connection', con => {
       life: 50
     };
     messages.push(newMsg);
-    snakes.filter(snake => snake.id === con.id)[0].name = data
-      .slice(0, 3)
-      .toUpperCase();
+    snakes.filter(snake => snake.id === con.id)[0].name = data.slice(0, 8);
   });
+
+  con.on('col', data => {
+    snakes.filter(snake => snake.id === con.id)[0].col = data;
+  });
+
+  if (snakes.length >= scaleFacter * 4) {
+    scaleFacter += 0.1;
+    tiles = Math.floor(tiles * scaleFacter);
+    tileSize = Math.floor(tileSize / scaleFacter);
+  }
 });
 
 ticker = 0;
@@ -181,16 +191,9 @@ setInterval(() => {
           }
         }
       });
-      snake.blocks.push({ x: newX, y: newY });
+      snake.blocks.push({ x: newX, y: newY, size: tileSize });
       while (snake.blocks.length > snake.len) {
         snake.blocks.splice(0, 1);
-      }
-      let offset = Math.min(4, snake.blocks.length);
-      for (let i = 0; i < snake.blocks.length; i++) {
-        snake.blocks[snake.blocks.length - 1 - i].size = tileSize - offset;
-        if (tileSize - offset > 24) {
-          offset += 0.64;
-        }
       }
       snakes.filter(snk => snk.id !== snake.id).forEach(snake2 => {
         for (let i = 0; i < snake2.blocks.length; i++) {
@@ -225,12 +228,19 @@ setInterval(() => {
         }
       });
     }
-    if (Math.abs(snake.dx) > 1 || Math.abs(snake.dy) > 1) {
-      if (snake.dx !== 0) {
-        snake.dx = snake.dx / boostFactor;
-      }
-      if (snake.dy !== 0) {
-        snake.dy = snake.dy / boostFactor;
+    // boost handler
+    if (snake.boost) {
+      if (snake.len > 5) {
+        for (let i = 0; i < boostFactor; i++) {
+          snake.blocks.push({
+            x: snake.blocks[snake.blocks.length - 1].x + snake.dx,
+            y: snake.blocks[snake.blocks.length - 1].y + snake.dy
+          });
+          snake.len--;
+          food.push(newFood(snake.blocks[0].x, snake.blocks[0].y, true));
+        }
+      } else {
+        snake.boost = false;
       }
     }
   });
@@ -249,11 +259,11 @@ setInterval(() => {
   });
 
   if (messages.length > 10) {
-    if (ticker > 10) {
+    if (ticker > 50) {
       messages.splice(0, 1);
     }
   } else {
-    if (ticker > 200) {
+    if (ticker > 500) {
       messages.splice(0, 1);
       ticker = 0;
     }
