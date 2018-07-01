@@ -21,6 +21,7 @@ const offset = 4;
 const foodPerSnek = 4;
 const moveScale = 0.5;
 const defaultLength = 16;
+const boostFactor = 5;
 
 const checkProximity = (x1, y1, x2, y2, leeway) => {
   len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -29,6 +30,19 @@ const checkProximity = (x1, y1, x2, y2, leeway) => {
   } else {
     return false;
   }
+};
+
+const newFood = (
+  x = Math.floor(Math.random() * tiles),
+  y = Math.floor(Math.random() * tiles),
+  perishable = false
+) => {
+  return {
+    x,
+    y,
+    size: tileSize,
+    perishable
+  };
 };
 
 io.on('connection', con => {
@@ -57,11 +71,7 @@ io.on('connection', con => {
     dead: false
   });
   for (let i = 0; i < foodPerSnek; i++) {
-    food.push({
-      x: Math.floor(Math.random() * tiles),
-      y: Math.floor(Math.random() * tiles),
-      size: tileSize
-    });
+    food.push(newFood());
   }
 
   con.on('move', data => {
@@ -83,6 +93,13 @@ io.on('connection', con => {
         snake.dx = 1;
         snake.dy = 0;
         break;
+      case 'boost':
+        if (snake.len > 1) {
+          snake.dx = snake.dx * boostFactor;
+          snake.dy = snake.dy * boostFactor;
+          snake.len--;
+          food.push(newFood(snake.blocks[0].x, snake.blocks[0].y, true));
+        }
       default:
         break;
     }
@@ -156,8 +173,12 @@ setInterval(() => {
       food.forEach(fud => {
         if (checkProximity(fud.x, fud.y, newX, newY, 1) === true) {
           snake.len++;
-          fud.x = Math.floor(Math.random() * tiles);
-          fud.y = Math.floor(Math.random() * tiles);
+          if (fud.perishable) {
+            food = food.filter(f => !(f.x === fud.x && f.y === fud.y));
+          } else {
+            fud.x = Math.floor(Math.random() * tiles);
+            fud.y = Math.floor(Math.random() * tiles);
+          }
         }
       });
       snake.blocks.push({ x: newX, y: newY });
@@ -203,6 +224,14 @@ setInterval(() => {
           }
         }
       });
+    }
+    if (Math.abs(snake.dx) > 1 || Math.abs(snake.dy) > 1) {
+      if (snake.dx !== 0) {
+        snake.dx = snake.dx / boostFactor;
+      }
+      if (snake.dy !== 0) {
+        snake.dy = snake.dy / boostFactor;
+      }
     }
   });
 

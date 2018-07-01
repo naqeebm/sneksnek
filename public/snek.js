@@ -2,10 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://139.59.164.28:8080');
-socket = io.connect('http://139.59.164.28:8080/');
-// console.log('connecting to http://localhost:8080/');
-// socket = io.connect('http://localhost:8080/');
+// console.log('connecting to http://139.59.164.28:8080');
+// socket = io.connect('http://139.59.164.28:8080/');
+console.log('connecting to http://localhost:8080/');
+socket = io.connect('http://localhost:8080/');
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
@@ -156,13 +156,27 @@ function drawSnake(ctx, snakeObj, tiles, tileSize = 8, offset = 1) {
 }
 
 function drawFood(ctx, food, tileSize = 8, offset = 1) {
-  ctx.fillStyle = 'red';
-  ctx.fillRect(
-    food.x * tileSize,
-    food.y * tileSize,
-    tileSize - offset,
-    tileSize - offset
-  );
+  if (food.perishable) {
+    ctx.fillStyle = `128,${Math.random() * 255},${Math.random() * 255})`;
+    ctx.beginPath();
+    ctx.arc(
+      food.x * tileSize + tileSize / 2,
+      food.y * tileSize + tileSize / 2,
+      tileSize / (Math.random() * 1 + 2),
+      0,
+      2 * Math.PI
+    );
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.fillStyle = `rgb(255,${Math.random() * 255},${Math.random() * 255})`;
+    ctx.fillRect(
+      food.x * tileSize,
+      food.y * tileSize,
+      tileSize - offset,
+      tileSize - offset
+    );
+  }
 }
 
 function drawTouchArrows(ctx, x1, y1, x2, y2) {
@@ -233,6 +247,20 @@ window.addEventListener('touchend', e => {
   });
 });
 
+window.addEventListener('keyup', e => {
+  {
+    if (!chat.showing) {
+      switch (e.key) {
+        case ' ':
+          console.log('boost finish');
+          break;
+        default:
+          break;
+      }
+    }
+  }
+});
+
 window.addEventListener('keydown', e => {
   if (!chat.showing) {
     switch (e.key) {
@@ -247,6 +275,10 @@ window.addEventListener('keydown', e => {
         break;
       case 'd':
         socket.emit('move', 'r');
+        break;
+      case ' ':
+        console.log('boost');
+        socket.emit('move', 'boost');
         break;
       case 'Enter':
         chat.showing = true;
