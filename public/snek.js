@@ -189,12 +189,12 @@ function drawSnake(ctx, snakeObj, tiles, tileSize = 8, offset = 1) {
   snakeObj.blocks.forEach(block => {
     const x = block.x * tileSize + tileSize / 2;
     const y = block.y * tileSize + tileSize / 2;
-    let sizeOffset = Math.max(Math.abs(block.size - tileSize / 2 - i), 10);
+    // let sizeOffset = Math.max(Math.abs(block.size - tileSize / 2 - i), 10);
     // lines
     if (snakeStyle.indexOf('L') !== -1) {
       if (checkProximity(x, y, prev.x, prev.y, 2 * tileSize)) {
         ctx.strokeStyle = snakeObj.col;
-        ctx.lineWidth = block.size - sizeOffset - offset;
+        ctx.lineWidth = block.size - /* sizeOffset */ -offset;
         ctx.beginPath();
         ctx.moveTo(prev.x, prev.y);
         ctx.lineTo(x, y);
@@ -213,7 +213,7 @@ function drawSnake(ctx, snakeObj, tiles, tileSize = 8, offset = 1) {
       ctx.arc(
         block.x * tileSize + tileSize / 2,
         block.y * tileSize + tileSize / 2,
-        (block.size - sizeOffset - offset) / 2,
+        (block.size - /* sizeOffset */ -offset) / 2,
         0,
         2 * Math.PI
       );

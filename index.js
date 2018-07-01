@@ -19,7 +19,7 @@ let tiles = 48 * scaleFacter;
 let tileSize = 128 / scaleFacter;
 const offset = 4;
 const foodPerSnek = 4;
-const moveScale = 0.5;
+const moveScale = 1;
 const defaultLength = 4;
 const boostFactor = 1;
 
@@ -312,4 +312,4 @@ setInterval(() => {
   }
 
   io.sockets.emit('data', data);
-}, 1000 / 30);
+}, 1000 / 12);
