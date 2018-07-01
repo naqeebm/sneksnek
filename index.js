@@ -23,7 +23,7 @@ const foodPerSnek = 4;
 const moveScale = 1;
 const defaultLength = 4;
 const boostFactor = 1;
-const foodMaxWeight = 25;
+const foodMaxWeight = 5;
 
 const checkProximity = (x1, y1, x2, y2, leeway) => {
   len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));

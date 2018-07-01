@@ -299,11 +299,11 @@ function drawFood(ctx, food, tileSize = 8, offset = 1) {
     if (foodStyle === 1) {
       ctx.fillStyle = `rgb(255,${Math.random() * 255},${Math.random() * 255})`;
     } else {
-      if (food.weight > 20) {
+      if (food.weight >= 4) {
         ctx.fillStyle = 'voilet';
-      } else if (food.weight > 10) {
+      } else if (food.weight >= 3) {
         ctx.fillStyle = 'blue';
-      } else if (food.weight > 5) {
+      } else if (food.weight >= 2) {
         ctx.fillStyle = 'green';
       } else {
         ctx.fillStyle = 'red';
