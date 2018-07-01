@@ -20,7 +20,7 @@ let tileSize = 128 / scaleFacter;
 const offset = 4;
 const foodPerSnek = 4;
 const moveScale = 0.5;
-const defaultLength = 64;
+const defaultLength = 4;
 const boostFactor = 1;
 
 const checkProximity = (x1, y1, x2, y2, leeway) => {
