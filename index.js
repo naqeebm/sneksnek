@@ -232,22 +232,37 @@ io.on('connection', con => {
   });
 
   con.on('request', data => {
+    console.log('req', data);
     switch (data) {
       case 'kms':
         killSnake(thisSnake);
         break;
       case 'comp':
-        const newComp = newSnake(-1, 'COMP');
+        const newComp = newSnake(-(comps.length + 1), 'COMP');
         snakes.push(newComp);
         comps.push(newComp);
         break;
       case 'rmcomps':
-        snakes.filter(snk => snk.id === -1).map(snk => {
-          snk.dead = true;
-          snk.col = 'darkslategrey';
-          snk.name = 'X_X';
+        snakes.filter(snk => snk.id < 0).forEach(snk2 => {
+          snk2.dead = true;
+          snk2.col = 'darkslategrey';
+          snk2.name = 'X_X';
         });
         comps = [];
+      case 'info':
+        console.log('snakes');
+        for (let i = 0; i < snakes.length; i++) {
+          console.log(
+            `id: [${snakes[i].id}], name: [${snakes[i].name}], msg: [${
+              snakes[i].message
+            }], ded: [${snakes[i].dead}], type:[${
+              comps.filter(cmp => cmp.id === snakes[i].id).length > 0
+                ? 'C'
+                : 'P'
+            }]`
+          );
+        }
+        break;
       default:
         break;
     }
@@ -263,26 +278,39 @@ io.on('connection', con => {
 ticker = 0;
 
 setInterval(() => {
-  /* LOG */ let timer = { time: new Date().getTime(), data: 0 };
+  // LOG let timer = { time: new Date().getTime(), data: 0 };
   if (messages.length !== 0) {
     ticker++;
-    /* LOG */ timer.data++;
+    // LOG timer.data++;
   }
-  snakes.forEach(snake => {
-    /* LOG */ timer.data++;
-    comps.forEach(comp => {
-      /* LOG */ timer.data++;
-      if (!comp.dead) {
-        /* LOG */ timer.data++;
-        if (new Date().getTime() % 31 === 0) {
-          /* LOG */ timer.data++;
-          makeMove(comp, ['u', 'd', 'l', 'r'][Math.floor(Math.random() * 4)]);
-        }
-        /* LOG */ timer.data++;
+  comps.forEach(comp => {
+    // LOG timer.data++;
+    if (!comp.dead) {
+      // LOG timer.data++;
+      const nd = new Date();
+      if (nd.getTime() % 31 === 0) {
+        // LOG timer.data++;
+        makeMove(comp, ['u', 'd', 'l', 'r'][Math.floor(Math.random() * 4)]);
       }
-    });
+      if (nd.getTime() % 197 === 0) {
+        const newMessage = {
+          id: comp.id,
+          col: comp.col,
+          message: 'snek snek!',
+          name: comp.name,
+          life: 50
+        };
+        comp.message = newMessage;
+        messages.push(newMessage);
+      }
+      // LOG timer.data++;
+    }
+  });
+  snakes.forEach(snake => {
+    // LOG timer.data++;
+
     if (!snake.dead) {
-      /* LOG */ timer.data++;
+      // LOG timer.data++;
       const newX =
         (snake.blocks[snake.blocks.length - 1].x +
           snake.dx * moveScale +
@@ -294,12 +322,12 @@ setInterval(() => {
           tiles) %
         tiles;
       food.forEach(fud => {
-        /* LOG */ timer.data++;
+        // LOG timer.data++;
         if (checkProximity(fud.x, fud.y, newX, newY, 2) === true) {
-          /* LOG */ timer.data++;
+          // LOG timer.data++;
           snake.len += fud.weight;
           if (fud.perishable) {
-            /* LOG */ timer.data++;
+            // LOG timer.data++;
             food = food.filter(
               f => !(f.x === fud.x && f.y === fud.y && fud.perishable)
             );
@@ -307,7 +335,7 @@ setInterval(() => {
               food.push(newFood());
             }
           } else {
-            /* LOG */ timer.data++;
+            // LOG timer.data++;
             fud.x = Math.floor(Math.random() * tiles);
             fud.y = Math.floor(Math.random() * tiles);
             fud.weight = Math.floor(Math.random() * foodMaxWeight);
@@ -319,9 +347,9 @@ setInterval(() => {
       snake.blocks.splice(0, snake.blocks.length - snake.len);
 
       snakes.filter(snk => !snk.dead && snk.id !== snake.id).forEach(snake2 => {
-        /* LOG */ timer.data++;
+        // LOG timer.data++;
         for (let i = 0; i < snake2.blocks.length; i++) {
-          /* LOG */ timer.data++;
+          // LOG timer.data++;
           if (
             checkProximity(
               snake2.blocks[i].x,
@@ -331,20 +359,21 @@ setInterval(() => {
               1
             )
           ) {
-            /* LOG */ timer.data++;
+            // LOG timer.data++;
             if (i === snake2.len - 1) {
-              /* LOG */ timer.data++;
+              // LOG timer.data++;
               if (snake.len > snake2.len) {
-                /* LOG */ timer.data++;
+                // LOG timer.data++;
                 snake.len += snake2.len;
                 killSnake(snake2);
               } else if (snake.len < snake2.len) {
-                /* LOG */ timer.data++;
+                // LOG timer.data++;
                 snake2.len += snake.len;
                 killSnake(snake);
               }
             } else {
-              /* LOG */ timer.data++;
+              // LOG timer.data++;
+              snake.lastMove = '';
               snake.dx = -snake.dx;
               snake.dy = -snake.dy;
             }
@@ -354,9 +383,9 @@ setInterval(() => {
       // // self collision
       const ownBlocks = snake.blocks;
       for (let i = 0; i < ownBlocks.length - 2; i++) {
-        /* LOG */ timer.data++;
+        // LOG timer.data++;
         if (checkProximity(ownBlocks[i].x, ownBlocks[i].y, newX, newY, 1)) {
-          /* LOG */ timer.data++;
+          // LOG timer.data++;
           let j = 0;
           while (j <= i) {
             let newfud = newFood(snake.blocks[0].x, snake.blocks[0].y, true);
@@ -368,7 +397,7 @@ setInterval(() => {
             j += weight;
           }
           // for (let j = 0; j <= i; j++) {
-          //   /* LOG */ timer.data++;
+          //   // LOG timer.data++;
           //   food.push(newFood(snake.blocks[0].x, snake.blocks[0].y, true));
           //   snake.blocks.splice(0, 1);
           //   snake.len--;
@@ -378,11 +407,11 @@ setInterval(() => {
       }
       // boost handler
       if (snake.boost) {
-        /* LOG */ timer.data++;
+        // LOG timer.data++;
         if (snake.len > 5) {
-          /* LOG */ timer.data++;
+          // LOG timer.data++;
           for (let i = 0; i < boostFactor; i++) {
-            /* LOG */ timer.data++;
+            // LOG timer.data++;
             snake.blocks.push({
               x: snake.blocks[snake.blocks.length - 1].x + snake.dx,
               y: snake.blocks[snake.blocks.length - 1].y + snake.dy
@@ -391,7 +420,7 @@ setInterval(() => {
             food.push(newFood(snake.blocks[0].x, snake.blocks[0].y, true));
           }
         } else {
-          /* LOG */ timer.data++;
+          // LOG timer.data++;
           snake.boost = false;
         }
       }
@@ -399,32 +428,32 @@ setInterval(() => {
   });
 
   messages.forEach(msg => {
-    /* LOG */ timer.data++;
+    // LOG timer.data++;
     if (msg.life > 0) {
-      /* LOG */ timer.data++;
+      // LOG timer.data++;
       msg.life--;
     } else {
-      /* LOG */ timer.data++;
+      // LOG timer.data++;
       const snake = snakes.filter(snk => snk.id === msg.id)[0];
       if (snake !== undefined) {
-        /* LOG */ timer.data++;
+        // LOG timer.data++;
         snake.message = null;
       }
     }
   });
 
   if (messages.length > 10) {
-    /* LOG */ timer.data++;
+    // LOG timer.data++;
     if (ticker > 10) {
-      /* LOG */ timer.data++;
+      // LOG timer.data++;
       removeMessagesHead();
       ticker = 0;
     }
   } else {
-    /* LOG */ timer.data++;
+    // LOG timer.data++;
     if (ticker > 100) {
-      /* LOG */ timer.data++;
-      snakes = snakes.filter(snk => !(snk.id === -1 && snk.dead));
+      // LOG timer.data++;
+      snakes = snakes.filter(snk => !(snk.id < 0 && snk.dead));
       removeMessagesHead();
       ticker = 0;
     }
@@ -437,14 +466,14 @@ setInterval(() => {
     meta: { tiles, tileSize, offset }
   };
 
-  /* LOG */ timer.data++;
+  // LOG timer.data++;
   io.sockets.emit('data', data);
-  /* LOG */ timer.data++;
-  console.log(
-    `time: ${new Date().getTime() - timer.time} primops: ${
-      timer.data
-    } snakes: ${snakes.length} -> comps: ${comps.length} food: ${
-      food.length
-    } messages: ${messages.length}`
-  );
-}, 1000 / 30);
+  // LOG timer.data++;
+  // console.log(
+  //   `time: ${new Date().getTime() - timer.time} primops: ${
+  //     timer.data
+  //   } snakes: ${snakes.length} -> comps: ${comps.length} food: ${
+  //     food.length
+  //   } messages: ${messages.length}`
+  // );
+}, 1000 / 24);

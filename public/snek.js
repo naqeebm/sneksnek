@@ -127,6 +127,8 @@ socket.on('data', data => {
       data.meta.tiles * data.meta.tileSize * scale,
       document.documentElement.clientHeight
     );
+  } else {
+    document.getElementById('mobile').style.display = 'none';
   }
 
   // scores
@@ -177,9 +179,12 @@ socket.on('data', data => {
   }
 });
 
-function init() {
+function init(random = true) {
+  console.log(random);
   handleCommand('/name ' + document.getElementById('name').value);
-  handleCommand('/col ' + document.getElementById('col').value);
+  if (!random) {
+    handleCommand('/col ' + document.getElementById('col').value);
+  }
   bgCol = document.getElementById('bgcol').value;
   document.getElementById('main').style.display = 'block';
   document.getElementById('initial').style.display = 'none';
