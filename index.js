@@ -333,7 +333,10 @@ setInterval(() => {
     if (msg.life > 0) {
       msg.life--;
     } else {
-      snakes.filter(snk => snk.id === msg.id)[0].message = null;
+      const snake = snakes.filter(snk => snk.id === msg.id)[0];
+      if (snake !== undefined) {
+        snake.message = null;
+      }
     }
   });
 
