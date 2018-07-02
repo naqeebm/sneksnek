@@ -27,7 +27,7 @@ const compLength = 4;
 const defaultLength = 6;
 const boostFactor = 1;
 const foodMaxWeight = 5;
-const maxFoodNo = 4;
+const maxFoodNo = 1;
 
 const checkProximity = (x1, y1, x2, y2, leeway) => {
   len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -392,7 +392,7 @@ setInterval(() => {
             const weight = Math.min(5, i - j + 1);
             newfud.weight = weight;
             food.push(newfud);
-            snake.blocks.splice(0, weight);
+            snake.blocks.splice(0, 1);
             snake.len -= weight;
             j += weight;
           }
