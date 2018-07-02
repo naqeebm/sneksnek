@@ -14,10 +14,10 @@ let snakes = [];
 
 let food = [];
 let messages = [];
-let scaleFacter = 1.5;
+let scaleFacter = 1;
 
-let tiles = 48 * scaleFacter;
-let tileSize = 128 / scaleFacter;
+let tiles = 58 * scaleFacter;
+let tileSize = 118 / scaleFacter;
 const offset = 4;
 const foodPerSnek = 4;
 const moveScale = 1;

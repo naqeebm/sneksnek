@@ -2,10 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://139.59.164.28:8080');
-socket = io.connect('http://139.59.164.28:8080/');
-// console.log('connecting to http://localhost:8080/');
-// socket = io.connect('http://localhost:8080/');
+// console.log('connecting to http://139.59.164.28:8080');
+// socket = io.connect('http://139.59.164.28:8080/');
+console.log('connecting to http://localhost:8080/');
+socket = io.connect('http://localhost:8080/');
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
@@ -26,6 +26,7 @@ let showNames = true;
 let chat = { showing: false, message: null };
 
 ctx.fillRect(0, 0, canv.width, canv.height);
+
 socket.on('data', data => {
   ctx.clearRect(0, 0, canv.width, canv.height);
   if (canv.height < canv.width) {
@@ -42,10 +43,6 @@ socket.on('data', data => {
   // first time
   if (first) {
     if (socket !== null) {
-      handleCommand(
-        `/col rgba(${Math.random() * 255},${Math.random() *
-          255},${Math.random() * 255},1)`
-      );
       handleCommand('/food 0');
 
       first = false;
@@ -174,6 +171,14 @@ socket.on('data', data => {
     }
   }
 });
+
+function init() {
+  handleCommand('/name ' + document.getElementById('name').value);
+  handleCommand('/col ' + document.getElementById('col').value);
+  bgCol = document.getElementById('bgcol').value;
+  document.getElementById('main').style.display = 'block';
+  document.getElementById('initial').style.display = 'none';
+}
 
 const checkProximity = (x1, y1, x2, y2, leeway) => {
   len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
