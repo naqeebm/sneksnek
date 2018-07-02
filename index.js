@@ -345,6 +345,9 @@ setInterval(() => {
       if (ded.length > 0) {
         snakes = snakes.filter(snk => snk.id !== ded[0].id);
       }
+      snakes.filter(snk => snk.id === messages.id).forEach(snk => {
+        snk.message = null;
+      });
       messages.splice(0, 1);
       ticker = 0;
 
