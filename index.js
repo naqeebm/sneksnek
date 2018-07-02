@@ -332,6 +332,8 @@ setInterval(() => {
   messages.forEach(msg => {
     if (msg.life > 0) {
       msg.life--;
+    } else {
+      snakes.filter(snk => snk.id === msg.id)[0].message = null;
     }
   });
 
