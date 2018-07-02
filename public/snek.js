@@ -10,6 +10,8 @@ socket = io.connect('http://139.59.164.28:8080/');
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
 
+let ready = false;
+
 let first = true;
 
 let snakes = [];
@@ -44,8 +46,6 @@ socket.on('data', data => {
   if (first) {
     if (socket !== null) {
       handleCommand('/food 0');
-
-      first = false;
     }
   }
 
@@ -114,6 +114,7 @@ socket.on('data', data => {
     if (first) {
       handleCommand('/name MobileU' + snakes.length);
       document.getElementById('controls').style.display = 'none';
+      first = false;
     }
     drawTouchArrows(
       ctx,
@@ -178,6 +179,7 @@ function init() {
   bgCol = document.getElementById('bgcol').value;
   document.getElementById('main').style.display = 'block';
   document.getElementById('initial').style.display = 'none';
+  ready = true;
 }
 
 const checkProximity = (x1, y1, x2, y2, leeway) => {
@@ -459,6 +461,9 @@ window.addEventListener('touchend', e => {
 });
 
 window.addEventListener('keydown', e => {
+  if (!ready) {
+    return;
+  }
   if (!chat.showing) {
     switch (e.key) {
       case 'w':

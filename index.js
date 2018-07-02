@@ -115,43 +115,41 @@ io.on('connection', con => {
     name: 'SYS',
     life: 50
   });
-  snakes.push(newSnake(con.id));
+  const thisSnake = newSnake(con.id);
+  snakes.push(thisSnake);
 
   for (let i = 0; i < foodPerSnek; i++) {
     food.push(newFood());
   }
 
   con.on('move', data => {
-    const snake = snakes.filter(snake => snake.id === con.id)[0];
-    if (snake !== undefined) {
-      switch (data) {
-        case 'u':
-          snake.dx = 0;
-          snake.dy = -1;
-          break;
-        case 'l':
-          snake.dx = -1;
-          snake.dy = 0;
-          break;
-        case 'd':
-          snake.dx = 0;
-          snake.dy = 1;
-          break;
-        case 'r':
-          snake.dx = 1;
-          snake.dy = 0;
-          break;
-        case 'boost':
-          if (snake.len > 1) {
-            if (!snake.boost) {
-              snake.boost = true;
-            } else {
-              snake.boost = false;
-            }
+    switch (data) {
+      case 'u':
+        thisSnake.dx = 0;
+        thisSnake.dy = -1;
+        break;
+      case 'l':
+        thisSnake.dx = -1;
+        thisSnake.dy = 0;
+        break;
+      case 'd':
+        thisSnake.dx = 0;
+        thisSnake.dy = 1;
+        break;
+      case 'r':
+        thisSnake.dx = 1;
+        thisSnake.dy = 0;
+        break;
+      case 'boost':
+        if (thisSnake.len > 1) {
+          if (!thisSnake.boost) {
+            thisSnake.boost = true;
+          } else {
+            thisSnake.boost = false;
           }
-        default:
-          break;
-      }
+        }
+      default:
+        break;
     }
   });
   con.on('disconnecting', reason => {
@@ -169,21 +167,18 @@ io.on('connection', con => {
   con.on('message', data => {
     let newMsg = {
       id: con.id,
-      col: snakes.filter(snake => snake.id === con.id)[0].col,
+      col: thisSnake.col,
       message: data,
       name: undefined,
       life: 150
     };
-    if (snakes.filter(snake => snake.id === con.id)[0].name !== undefined) {
-      newMsg.name = snakes.filter(snake => snake.id === con.id)[0].name;
+    if (thisSnake.name !== undefined) {
+      newMsg.name = thisSnake.name;
     }
     messages.push(newMsg);
-    snake = snakes.filter(snake => snake.id === con.id)[0];
-    if (snake !== null) {
-      snake.message = null;
-      snake.message = newMsg;
-    }
-    console.log('>>', con.id, data);
+    thisSnake.message = null; // ?
+    thisSnake.message = newMsg;
+    console.log('>>', con.id, thisSnake.name, data);
   });
   con.on('name', data => {
     const newMsg = {
@@ -194,17 +189,17 @@ io.on('connection', con => {
       life: 50
     };
     messages.push(newMsg);
-    snakes.filter(snake => snake.id === con.id)[0].name = data.slice(0, 8);
+    thisSnake.name = data.slice(0, 8);
   });
 
   con.on('col', data => {
-    snakes.filter(snake => snake.id === con.id)[0].col = data;
+    thisSnake.col = data;
   });
 
   con.on('request', data => {
     switch (data) {
       case 'kms':
-        killSnake(snakes.filter(snk => snk.id === con.id)[0]);
+        killSnake(thisSnake);
         break;
       case 'comp':
         snakes.push(newSnake(-1, 'COMP'));
@@ -212,7 +207,6 @@ io.on('connection', con => {
       case 'delcomp':
         snakes.filter(snk => snk.id === -1).map(snk => {
           snk.dead = true;
-          snk.id = null;
           snk.col = 'darkslategrey';
           snk.name = 'X_X';
         });
@@ -220,7 +214,7 @@ io.on('connection', con => {
         break;
     }
   });
-
+  // resize map when more players
   // if (snakes.length >= scaleFacter * 4) {
   //   scaleFacter += 0.1;
   //   tiles = Math.floor(tiles * scaleFacter);
@@ -231,9 +225,7 @@ io.on('connection', con => {
 ticker = 0;
 
 setInterval(() => {
-  if (messages.length === 0) {
-    ticker = 0;
-  } else {
+  if (messages.length !== 0) {
     ticker++;
   }
   snakes.forEach(snake => {
@@ -249,7 +241,7 @@ setInterval(() => {
           tiles) %
         tiles;
       food.forEach(fud => {
-        if (checkProximity(fud.x, fud.y, newX, newY, 1) === true) {
+        if (checkProximity(fud.x, fud.y, newX, newY, 2) === true) {
           snake.len += fud.weight;
           if (fud.perishable) {
             food = food.filter(f => !(f.x === fud.x && f.y === fud.y));
@@ -260,38 +252,36 @@ setInterval(() => {
           }
         }
       });
+
       snake.blocks.push({ x: newX, y: newY, size: tileSize });
-      while (snake.blocks.length > snake.len) {
-        snake.blocks.splice(0, 1);
-      }
-      snakes
-        .filter(snk => !snk.dead)
-        .filter(snk => snk.id !== snake.id)
-        .forEach(snake2 => {
-          for (let i = 0; i < snake2.blocks.length; i++) {
-            if (
-              checkProximity(
-                snake2.blocks[i].x,
-                snake2.blocks[i].y,
-                newX,
-                newY,
-                1
-              )
-            ) {
-              if (i === snake2.len - 1) {
-                if (snake.len > snake2.len) {
-                  snake.len += snake2.len;
-                  killSnake(snake2);
-                } else if (snake.len < snake2.len) {
-                  snake2.len += snake.len;
-                  killSnake(snake);
-                }
+      snake.blocks.splice(0, snake.blocks.length - snake.len);
+
+      snakes.filter(snk => !snk.dead && snk.id !== snake.id).forEach(snake2 => {
+        for (let i = 0; i < snake2.blocks.length; i++) {
+          if (
+            checkProximity(
+              snake2.blocks[i].x,
+              snake2.blocks[i].y,
+              newX,
+              newY,
+              1
+            )
+          ) {
+            if (i === snake2.len - 1) {
+              if (snake.len > snake2.len) {
+                snake.len += snake2.len;
+                killSnake(snake2);
+              } else if (snake.len < snake2.len) {
+                snake2.len += snake.len;
+                killSnake(snake);
               }
+            } else {
               snake.dx = -snake.dx;
               snake.dy = -snake.dy;
             }
           }
-        });
+        }
+      });
       // self collision
       const ownBlocks = snake.blocks;
       for (let i = 0; i < ownBlocks.length - 2; i++) {
@@ -322,13 +312,6 @@ setInterval(() => {
     }
   });
 
-  let data = {
-    snakes,
-    food,
-    messages,
-    meta: { tiles, tileSize, offset }
-  };
-
   messages.forEach(msg => {
     if (msg.life > 0) {
       msg.life--;
@@ -343,6 +326,7 @@ setInterval(() => {
   if (messages.length > 10) {
     if (ticker > 10) {
       messages.splice(0, 1);
+      ticker = 0;
     }
   } else {
     if (ticker > 100) {
@@ -350,17 +334,17 @@ setInterval(() => {
       if (ded.length > 0) {
         snakes = snakes.filter(snk => snk.id !== ded[0].id);
       }
-      snakes.filter(snk => snk.id === messages.id).forEach(snk => {
-        snk.message = null;
-      });
       messages.splice(0, 1);
       ticker = 0;
-
-      snakes.forEach(snk => {
-        snk.len = snk.blocks.length;
-      });
     }
   }
+
+  let data = {
+    snakes,
+    food,
+    messages,
+    meta: { tiles, tileSize, offset }
+  };
 
   io.sockets.emit('data', data);
 }, 1000 / 18);

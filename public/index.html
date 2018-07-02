@@ -26,20 +26,30 @@
     }
 
     #initial {
-      margin: 0;
-      padding: 0;
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.5);
+      height: 100%;
+      width: 100;
       overflow: hidden;
+    }
+
+    #initialinner {
+      left: 12.5%;
+      top: 12.5%;
+      overflow: hidden;
+      position: absolute;
       display: flex;
       flex-direction: column;
       text-align: center;
       background: white;
+      width: 75%;
     }
   </style>
   <title>Snek</title>
 </head>
 
 <body style='margin: 0 0;padding: 0 0;display: flex;background-color: grey;'>
-  <div id='main' style='display:none;margin :0;padding: 0;overflow: hidden;'>
+  <div id='main' style='margin :0;padding: 0;overflow: hidden;'>
     <canvas tab-index=0 id="canv"></canvas>
     <div style='position: absolute;left:50%;top:0;' onclick="this.style.display='none';" id='controls'>
       <p>
@@ -138,26 +148,28 @@
     </div>
   </div>
   <script src="./snek.js"></script>
-
   <div id='initial' class='fill-x'>
-    <fieldset>
-      <legend>
-        <h1>Set up your snek</h1>
-        <div>
-          <label for='name'>Name</label>
-          <br/>
-          <input type='text' id='name' class='fill-75-x' />
-          <br/>
-          <label for='col'>Snake Color</label>
-          <input type='color' id='col' class='fill-75-x' value='#0055ff' />
-          <br/>
-          <label for='bgcol'>Bg Color</label>
-          <input type='color' id='bgcol' class='fill-75-x' value='#ffffff' />
-        </div>
-      </legend>
-    </fieldset>
-    <button onclick="init()" class='fill-75-x'>Connect!</button>
+    <div id='initialinner' class='fill-x'>
 
+      <fieldset>
+        <legend>
+          <h1>Set up your snek</h1>
+          <div>
+            <label for='name'>Name</label>
+            <br/>
+            <input type='text' id='name' class='fill-75-x' />
+            <br/>
+            <label for='col'>Snake Color</label>
+            <input type='color' id='col' class='fill-75-x' value='#0055ff' />
+            <br/>
+            <label for='bgcol'>Bg Color</label>
+            <input type='color' id='bgcol' class='fill-75-x' value='#ffffff' />
+          </div>
+        </legend>
+      </fieldset>
+      <button onclick="init()" class='fill-75-x'>Connect!</button>
+
+    </div>
   </div>
 </body>
 
