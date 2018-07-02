@@ -288,7 +288,7 @@ setInterval(() => {
     if (!comp.dead) {
       // LOG timer.data++;
       const nd = new Date();
-      if (nd.getTime() % 31 === 0) {
+      if (nd.getTime() % 91 === 0) {
         // LOG timer.data++;
         makeMove(comp, ['u', 'd', 'l', 'r'][Math.floor(Math.random() * 4)]);
       }
