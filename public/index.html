@@ -8,21 +8,32 @@
   <style>
     * {
       overflow: hidden;
+      font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+
+    th {
+      border-bottom: 2px solid black;
+      font-size: 12px;
     }
 
     td {
       border: 1px solid black;
-      background: white;
-      font-style: italic;
+      border-top: 0;
+      border-bottom: 0;
+      background: rgba(28, 100, 89, 0.6);
+      font-size: 12px;
+      padding: 0 16px;
+      color: white;
     }
 
     .fill-x {
       width: 100%;
+      margin: auto;
     }
 
     .fill-75-x {
       width: 75%;
-      margin: 0 auto;
+
     }
 
     #initial {
@@ -39,10 +50,36 @@
       overflow: hidden;
       position: absolute;
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       text-align: center;
       background: white;
       width: 75%;
+      padding: 16px;
+      border-radius: 16px;
+      box-shadow: 4px 4px 16px 16px darkslategrey;
+    }
+
+    #connectbtn {
+      text-decoration: none;
+      background-color: grey;
+      border-radius: 32px;
+      border: 1px solid darkgrey;
+      padding: 16px -2px;
+      margin: 8px;
+      font-size: 16px;
+      color: white;
+    }
+
+    #mobile {
+      text-align: center;
+      z-index: 1000;
+      position: fixed;
+      background-color: rgba(255, 255, 255, 0.3);
+      color: white;
+      right: 0;
+      top: 50%;
+      border-radius: 2px;
+      margin: 32px;
     }
   </style>
   <title>Snek</title>
@@ -51,124 +88,138 @@
 <body style='margin: 0 0;padding: 0 0;display: flex;background-color: grey;'>
   <div id='main' style='margin :0;padding: 0;overflow: hidden;'>
     <canvas tab-index=0 id="canv"></canvas>
-    <div style='position: absolute;left:50%;top:0;' onclick="this.style.display='none';" id='controls'>
-      <p>
-        <table>
-          <tr>
-            <td>
-              <b>Controls (click to hide)</b>
-            </td>
-          </tr>
 
-          <tr>
-            <td>w
-              <td></td>
-              <td> Up</td>
-          </tr>
-
-          <tr>
-            <td>a
-              <td></td>
-              <td> Left</td>
-          </tr>
-
-          <tr>
-            <td>s
-              <td></td>
-              <td> Down</td>
-          </tr>
-
-          <tr>
-            <td>d
-              <td></td>
-              <td> Right</td>
-          </tr>
-
-          <tr>
-            <td>Space
-              <td></td>
-              <td> Toggle boost</td>
-          </tr>
-
-          <tr>
-            <td>Enter
-              <td></td>
-              <td> toggle messagebox</td>
-          </tr>
-          <tr>
-            <td>
-              <b>Commands</b>
-            </td>
-          </tr>
-
-          <tr>
-            <td>/name [new name]
-              <td></td>
-              <td> change name</td>
-          </tr>
-
-          <tr>
-            <td>/col [new web col]
-              <td></td>
-              <td> change snake colour</td>
-          </tr>
-
-          <tr>
-            <td>/bgcol [new web col]
-              <td></td>
-              <td> change local background colour</td>
-          </tr>
-
-          <tr>
-            <td>/names
-              <td></td>
-              <td> toggle names</td>
-          </tr>
-
-          <tr>
-            <td>/food [0|1]
-              <td></td>
-              <td> change food appearance (0 = simplest)</td>
-          </tr>
-
-          <tr>
-            <td>/snake [string of: H - highlight|C - Circles|L - lines]
-              <td></td>
-              <td> change local snake appearance.</td>
-          </tr>
-
-          <tr>
-            <td>/req [kms - die|comp - new comp snek|delcomp - killcomp sneks]
-              <td></td>
-              <td> make server request from client.</td>
-          </tr>
-        </table>
-
-      </p>
-    </div>
   </div>
   <script src="./snek.js"></script>
   <div id='initial' class='fill-x'>
     <div id='initialinner' class='fill-x'>
 
-      <fieldset>
-        <legend>
-          <h1>Set up your snek</h1>
-          <div>
-            <label for='name'>Name</label>
-            <br/>
-            <input type='text' id='name' class='fill-75-x' />
-            <br/>
-            <label for='col'>Snake Color</label>
-            <input type='color' id='col' class='fill-75-x' value='#0055ff' />
-            <br/>
-            <label for='bgcol'>Bg Color</label>
-            <input type='color' id='bgcol' class='fill-75-x' value='#ffffff' />
-          </div>
-        </legend>
-      </fieldset>
-      <button onclick="init()" class='fill-75-x'>Connect!</button>
+      <div id='form'>
+        <u>
+          <b>Set up your snek</b>
+        </u>
+        <br/>
+        <label for='name'>Name</label>
+        <br/>
+        <input type='text' id='name' class='-75-x' placeholder="snek nem" />
+        <br/>
+        <label for='col'>Snake Color</label>
+        <input type='color' id='col' class='fill-75-x' value='#2288ff' />
+        <br/>
+        <label for='bgcol'>Bg Color</label>
+        <input type='color' id='bgcol' class='fill-75-x' value='#ffffff' />
+        <button style='background-color: #aabbcc' onclick="init(true)" class='fill-75-x' id='connectbtn'>random</button>
+        <button onclick="init(false)" class='fill-75-x' id='connectbtn'>custom</button>
+      </div>
+      <div>
+        <table id='controls'>
+          <tr>
+            <th>
+              <b>PC</b>
+            </th>
+            <th>Keys</th>
+          </tr>
 
+          <tr>
+            <td>w</td>
+            <td> Up</td>
+          </tr>
+
+          <tr>
+            <td>a
+              <td> Left</td>
+          </tr>
+
+          <tr>
+            <td>s</td>
+            <td> Down</td>
+          </tr>
+
+          <tr>
+            <td>d</td>
+            <td> Right</td>
+          </tr>
+
+          <tr>
+            <td>Space</td>
+            <td> Toggle boost</td>
+          </tr>
+
+          <tr>
+            <td>Enter</td>
+            <td> toggle messagebox</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <b>Commands</b>
+          </tr>
+
+          <tr>
+            <td>/name [new name]</td>
+            <td> change name</td>
+          </tr>
+
+          <tr>
+            <td>/col [new web col]</td>
+            <td> change snake colour</td>
+          </tr>
+
+          <tr>
+            <td>/bgcol [new web col]</td>
+            <td> change local background colour</td>
+          </tr>
+
+          <tr>
+            <td>/names</td>
+            <td> toggle names</td>
+          </tr>
+
+          <tr>
+            <td>/food [0|1]</td>
+            <td> change food appearance (0 = simplest)</td>
+          </tr>
+
+          <tr>
+            <td>/snake [H|C|L]</td>
+            <td> change local snake appearance.</td>
+          </tr>
+
+          <tr>
+            <td>/req [kms|comp|rmcomps]</td>
+            <td> make server request from client.</td>
+          </tr>
+        </table>
+
+      </div>
+
+
+    </div>
+    <div>
+      <table id='mobile'>
+        <tr>
+          <td colspan="3" rowspan="1">Jazz</td>
+          <td colspan="3" rowspan="1">Roar</td>
+        </tr>
+        <tr>
+          <td colspan="3" rowspan="1">Jazz</td>
+          <td colspan="3" rowspan="1">Roar</td>
+        </tr>
+        <tr>
+          <td colspan="6" rowspan="1">snek booost!!1</td>
+        </tr>
+        <tr>
+          <td colspan="6" rowspan="1">snek booost!!1</td>
+        </tr>
+        <tr>
+          <td colspan="2" rowspan="2">&lt;</td>
+          <td colspan="2" rowspan="1">^</td>
+          <td colspan="2" rowspan="2">&gt;</td>
+        </tr>
+        <tr>
+          <td colspan="2" rowspan="1">v</td>
+        </tr>
+      </table>
     </div>
   </div>
 </body>
