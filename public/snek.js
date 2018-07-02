@@ -2,10 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://139.59.164.28:8080');
-socket = io.connect('http://139.59.164.28:8080/');
-// console.log('connecting to http://localhost:8080/');
-// socket = io.connect('http://localhost:8080/');
+// console.log('connecting to http://139.59.164.28:8080');
+// socket = io.connect('http://139.59.164.28:8080/');
+console.log('connecting to http://localhost:8080/');
+socket = io.connect('http://localhost:8080/');
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
@@ -31,7 +31,10 @@ let chat = { showing: false, message: null };
 
 ctx.fillRect(0, 0, canv.width, canv.height);
 
-socket.on('id', id => (snakeId = id));
+socket.on('id', id => {
+  snakeId = id;
+  document.getElementById('splash').style.display = 'none';
+});
 
 socket.on('data', data => {
   ctx.clearRect(0, 0, canv.width, canv.height);

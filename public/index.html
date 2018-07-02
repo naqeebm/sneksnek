@@ -36,6 +36,19 @@
 
     }
 
+    #splash {
+      position: absolute;
+      background: linear-gradient(to bottom right, rgba(0, 255, 255, 0.3), rgba(0, 255, 0, 0.8));
+      height: 100%;
+      width: 100;
+      overflow: hidden;
+      z-index: 2000;
+      display: 'flex';
+      flex-direction: column;
+      text-align: center;
+      color: darkgreen;
+    }
+
     #initial {
       position: absolute;
       background-color: rgba(0, 0, 0, 0.5);
@@ -91,6 +104,10 @@
 
   </div>
   <script src="./snek.js"></script>
+  <div id='splash' class='fill-x'>
+    <h2>Getting things ready... </h2>
+    <h2>2secs...</h2>
+  </div>
   <div id='initial' class='fill-x'>
     <div id='initialinner' class='fill-x'>
 
@@ -197,7 +214,13 @@
     </div>
     <div>
       <table id='mobile'>
-        <tr><td colspan="6"><b><i>Controls</i></b></td></tr>
+        <tr>
+          <td colspan="6">
+            <b>
+              <i>Controls</i>
+            </b>
+          </td>
+        </tr>
         <tr>
           <td colspan="3" rowspan="1">Jazz</td>
           <td colspan="3" rowspan="1">Roar</td>
