@@ -2,10 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://139.59.164.28:8080');
-socket = io.connect('http://139.59.164.28:8080/');
-// console.log('connecting to http://localhost:8080/');
-// socket = io.connect('http://localhost:8080/');
+// console.log('connecting to http://139.59.164.28:8080');
+// socket = io.connect('http://139.59.164.28:8080/');
+console.log('connecting to http://localhost:8080/');
+socket = io.connect('http://localhost:8080/');
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
@@ -13,10 +13,12 @@ canv.width = document.documentElement.clientWidth;
 let ready = false;
 
 let first = true;
+let snakeId = null;
 
 let snakes = [];
 let food = [];
 let messages = [];
+let sentMessage = '';
 let meta = null;
 
 let scale = 1;
@@ -28,6 +30,8 @@ let showNames = true;
 let chat = { showing: false, message: null };
 
 ctx.fillRect(0, 0, canv.width, canv.height);
+
+socket.on('id', id => (snakeId = id));
 
 socket.on('data', data => {
   ctx.clearRect(0, 0, canv.width, canv.height);
@@ -465,35 +469,43 @@ window.addEventListener('keydown', e => {
     return;
   }
   if (!chat.showing) {
-    switch (e.key) {
-      case 'w':
-        socket.emit('move', 'u');
-        break;
-      case 'a':
-        socket.emit('move', 'l');
-        break;
-      case 's':
-        socket.emit('move', 'd');
-        break;
-      case 'd':
-        socket.emit('move', 'r');
-        break;
-      case ' ':
-        socket.emit('move', 'boost');
-        break;
-      case 'Enter':
-        chat.showing = true;
-        chat.message = '';
-        break;
-      default:
-        break;
+    let move = null;
+    let moves = ['u', 'd', 'l', 'r', 'boost'];
+    let keys = ['w', 's', 'a', 'd', ' '];
+    move = moves[keys.indexOf(e.key)];
+    if (move !== snakes.filter(snk => snk.id === snakeId)[0].lastMove) {
+      switch (e.key) {
+        case 'w':
+          socket.emit('move', 'u');
+          break;
+        case 'a':
+          socket.emit('move', 'l');
+          break;
+        case 's':
+          socket.emit('move', 'd');
+          break;
+        case 'd':
+          socket.emit('move', 'r');
+          break;
+        case ' ':
+          socket.emit('move', 'boost');
+          break;
+        case 'Enter':
+          chat.showing = true;
+          chat.message = '';
+          break;
+        default:
+          break;
+      }
     }
   } else {
     if (e.keyCode === 13) {
       if (chat.message.length > 0) {
         if (chat.message[0] === '/') {
+          sentMessage = chat.message;
           handleCommand(chat.message);
         } else {
+          sentMessage = chat.message;
           while (chat.message.length > 0) {
             socket.emit('message', chat.message.slice(0, 64));
             chat.message = chat.message.slice(64, chat.message.length);
@@ -507,6 +519,8 @@ window.addEventListener('keydown', e => {
     } else if (e.keyCode === 27) {
       chat.message = null;
       chat.showing = false;
+    } else if (e.keyCode === 38) {
+      chat.message = sentMessage;
     } else {
       if (chat.message.length < 64) {
         if (
