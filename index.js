@@ -27,7 +27,7 @@ const compLength = 4;
 const defaultLength = 6;
 const boostFactor = 1;
 const foodMaxWeight = 5;
-const maxFoodNo = 1;
+const maxFoodNo = 2;
 
 const checkProximity = (x1, y1, x2, y2, leeway) => {
   len = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -89,6 +89,7 @@ const newSnake = (id, name = 'snek' + snakes.length) => {
     dx: 1,
     dy: 0,
     len: id === -1 ? compLength : defaultLength,
+    score: 0,
     col: `rgb(${Math.random() * 255},${Math.random() * 255},${Math.random() *
       255})`,
     message: null,
@@ -278,6 +279,9 @@ io.on('connection', con => {
 ticker = 0;
 
 setInterval(() => {
+  if (food.filter(fud => !fud.perishable).length < maxFoodNo) {
+    food.push(newFood());
+  }
   // LOG let timer = { time: new Date().getTime(), data: 0 };
   if (messages.length !== 0) {
     ticker++;
@@ -331,9 +335,6 @@ setInterval(() => {
             food = food.filter(
               f => !(f.x === fud.x && f.y === fud.y && fud.perishable)
             );
-            if (food.length < maxFoodNo) {
-              food.push(newFood());
-            }
           } else {
             // LOG timer.data++;
             fud.x = Math.floor(Math.random() * tiles);
@@ -366,10 +367,12 @@ setInterval(() => {
                 // LOG timer.data++;
                 snake.len += snake2.len;
                 killSnake(snake2);
+                snake.score++;
               } else if (snake.len < snake2.len) {
                 // LOG timer.data++;
                 snake2.len += snake.len;
                 killSnake(snake);
+                snake2.score++;
               }
             } else {
               // LOG timer.data++;
@@ -391,8 +394,9 @@ setInterval(() => {
             let newfud = newFood(snake.blocks[0].x, snake.blocks[0].y, true);
             const weight = Math.min(5, i - j + 1);
             newfud.weight = weight;
+            newfud.weight = 1;
             food.push(newfud);
-            snake.blocks.splice(0, 1);
+            snake.blocks.splice(0, weight);
             snake.len -= weight;
             j += weight;
           }

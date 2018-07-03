@@ -1,0 +1,86 @@
+set up server
+
+set up constants + arrays
+
+functions
+
+on connecting:
+	push message
+	push new snake
+	push food
+
+on move:
+	switch statement
+
+on disconnecting:
+	log disconnecting
+	filter to remove snake
+	push message
+	splice food
+
+on message:
+	new message
+	get snake name
+	push message
+	null message
+	snake message
+	log message
+
+on name:
+	new message
+	push message
+	find snake + add new name from sliced name
+
+on col:
+	find snake + change col
+
+on req:
+	find snake + map/push new snake
+
+
+interval:
+	ticker
+	for each snake:
+		set newX var
+		set newY var
+		for each food:
+			check prox.
+				remove food if per.
+				3x random if not
+		push snake block
+		remove snake blocks (while loop)
+		filter snakes not ded, not self + forEach:
+			check prox.
+				killsnake?
+				killsnake
+			redirect snake
+		set ownblocks (no filter)
+		for each ownBlocks-2:
+			if check prox.
+				iterate add food + remove block
+				change snake len
+				break
+		if boost
+			if len>5
+				iterate add + remove blocks
+				len--
+				add food
+	set data
+	for each message:
+		?life--
+		:find snake with message
+			+set to null
+	messages > 10.
+		? ticker > 10.
+			?splice 1st msg
+	: ticker > 100.
+		? filter ded snakes
+		ded >0.
+			?remove ded[0]
+		filter snakes with message
+			+set message to null
+		remove first message
+		reset ticker
+		for each snake set len = blocks.len
+	send out data
+			

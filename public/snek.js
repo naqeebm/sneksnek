@@ -2,10 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://139.59.164.28:8080');
-socket = io.connect('http://139.59.164.28:8080/');
-// console.log('connecting to http://localhost:8080/');
-// socket = io.connect('http://localhost:8080/');
+// console.log('connecting to http://139.59.164.28:8080');
+// socket = io.connect('http://139.59.164.28:8080/');
+console.log('connecting to http://localhost:8080/');
+socket = io.connect('http://localhost:8080/');
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
@@ -140,8 +140,11 @@ socket.on('data', data => {
     ctx.fillRect(5, 15 + i * 40, 20 + 24 * `${snakes[i].len}`.length, 30);
     ctx.fillStyle = snakes[i].col;
     ctx.fillRect(10, 20 + i * 40, 20, 20);
-    ctx.font = '24px calibri';
-    ctx.fillText(snakes[i].len, 40, 20 + i * 40 + 16);
+    ctx.font = '12px calibri';
+    ctx.fillText(snakes[i].len, 34, 10 + i * 40 + 16);
+    ctx.fillStyle = 'black';
+    ctx.font = '12px calibri';
+    ctx.fillText(snakes[i].score, 34, 24 + i * 40 + 16);
     if (snakes[i].name !== undefined) {
       ctx.font = `12px sans-serif`;
       ctx.fillStyle = 'white';
