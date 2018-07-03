@@ -2,10 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://139.59.164.28:8080');
-socket = io.connect('http://139.59.164.28:8080/');
-// console.log('connecting to http://localhost:8080/');
-// socket = io.connect('http://localhost:8080/');
+// console.log('connecting to http://139.59.164.28:8080');
+// socket = io.connect('http://139.59.164.28:8080/');
+console.log('connecting to http://localhost:8080/');
+socket = io.connect('http://localhost:8080/');
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
@@ -183,7 +183,15 @@ socket.on('data', data => {
 });
 
 function init(random = true) {
-  console.log(random);
+  if (random) {
+    let newCol = '#';
+    let arr = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'A', 'B', 'C', 'D', 'E', 'F'];
+    for (let i = 0; i < 6; i++) {
+      newCol += arr[Math.floor(Math.random() * arr.length)];
+    }
+    document.getElementById('col').value = newCol;
+    return;
+  }
   handleCommand('/name ' + document.getElementById('name').value);
   if (!random) {
     handleCommand('/col ' + document.getElementById('col').value);
@@ -218,6 +226,23 @@ function drawGrid(ctx, tiles, tileSize = 8, offset = 1, col = bgCol) {
 }
 
 function drawSnake(ctx, snakeObj, tiles, tileSize = 8, offset = 1) {
+  //halo
+  if (snakeObj.id === snakeId) {
+    const head = snakeObj.blocks[snakeObj.blocks.length - 1];
+    ctx.fillStyle = 'rgba(0,255,128,0.5)';
+    for (let i = tileSize * 2; i > tileSize; i *= 0.5) {
+      ctx.beginPath();
+      ctx.arc(
+        head.x * tileSize + tileSize / 2,
+        head.y * tileSize + tileSize / 2,
+        i - offset,
+        0,
+        2 * Math.PI
+      );
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
   // first 2 blocks affected
   let i = 0;
   let prev = {

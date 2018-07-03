@@ -72,9 +72,44 @@
       box-shadow: 4px 4px 16px 16px darkslategrey;
     }
 
-    #connectbtn {
+    .connectbtn:first-of-type {
+      text-decoration: none;
+      background-color: blueviolet;
+      border-radius: 32px;
+      border: 1px solid darkgrey;
+      padding: 16px -2px;
+      margin: 8px;
+      font-size: 16px;
+      color: white;
+    }
+
+
+    .connectbtn {
       text-decoration: none;
       background-color: grey;
+      border-radius: 32px;
+      border: 1px solid darkgrey;
+      padding: 16px -2px;
+      margin: 8px;
+      font-size: 16px;
+      color: white;
+    }
+
+
+    .connectbtn:hover {
+      text-decoration: none;
+      background-color: darkgray;
+      border-radius: 32px;
+      border: 1px solid darkgrey;
+      padding: 16px -2px;
+      margin: 8px;
+      font-size: 16px;
+      color: white;
+    }
+
+    .connectbtn:active {
+      text-decoration: none;
+      background-color: black;
       border-radius: 32px;
       border: 1px solid darkgrey;
       padding: 16px -2px;
@@ -125,8 +160,11 @@
         <br/>
         <label for='bgcol'>Bg Color</label>
         <input type='color' id='bgcol' class='fill-75-x' value='#ffffff' />
-        <button style='background-color: #aabbcc' onclick="init(true)" class='fill-75-x' id='connectbtn'>random</button>
-        <button onclick="init(false)" class='fill-75-x' id='connectbtn'>custom</button>
+        <button onclick="init(true)" class='fill-75-x connectbtn'>
+          random color</button>
+        <button onclick="init(false)" class='fill-75-x connectbtn'>
+          play
+        </button>
       </div>
       <div>
         <table id='controls'>
