@@ -296,17 +296,17 @@ setInterval(() => {
         // LOG timer.data++;
         makeMove(comp, ['u', 'd', 'l', 'r'][Math.floor(Math.random() * 4)]);
       }
-      if (nd.getTime() % 197 === 0) {
-        const newMessage = {
-          id: comp.id,
-          col: comp.col,
-          message: 'snek snek!',
-          name: comp.name,
-          life: 50
-        };
-        comp.message = newMessage;
-        messages.push(newMessage);
-      }
+      // if (nd.getTime() % 197 === 0) {
+      //   const newMessage = {
+      //     id: comp.id,
+      //     col: comp.col,
+      //     message: 'snek snek!',
+      //     name: comp.name,
+      //     life: 50
+      //   };
+      //   comp.message = newMessage;
+      //   messages.push(newMessage);
+      // }
       // LOG timer.data++;
     }
   });
