@@ -2,8 +2,8 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://178.128.45.249:8080/');
-socket = io.connect('http://178.128.45.249:8080/');
+console.log('connecting to http://178.128.35.83:8080/');
+socket = io.connect('http://178.128.35.83:8080/');
 // console.log('connecting to http://localhost:8080/');
 // socket = io.connect('http://localhost:8080/');
 // console.log('connecting to http://192.168.1.4:8080/');
