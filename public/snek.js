@@ -2,17 +2,10 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-<<<<<<< HEAD
-// console.log('connecting to http://178.128.45.249:8080/');
-// socket = io.connect('http://178.128.45.249:8080/');
-console.log('connecting to http://localhost:8080/');
-socket = io.connect('http://localhost:8080/');
-=======
-console.log('connecting to http://178.128.35.83:8080/');
-socket = io.connect('http://178.128.35.83:8080/');
+console.log('connecting to http://178.128.35.46:8080/');
+socket = io.connect('http://178.128.35.46:8080/');
 // console.log('connecting to http://localhost:8080/');
 // socket = io.connect('http://localhost:8080/');
->>>>>>> 138ca9663bdc0207e7815aee217b3de631cb4987
 // console.log('connecting to http://192.168.1.4:8080/');
 // socket = io.connect('http://192.168.1.4:8080/');
 
