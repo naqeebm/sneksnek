@@ -2,12 +2,17 @@ const canv = document.getElementById('canv');
 const ctx = canv.getContext('2d');
 let socket = null;
 
-console.log('connecting to http://178.62.65.196:8080/');
-socket = io.connect('http://178.62.65.196:8080/');
-// console.log('connecting to http://localhost:8080/');
-// socket = io.connect('http://localhost:8080/');
-// console.log('connecting to http://192.168.1.4:8080/');
-// socket = io.connect('http://192.168.1.4:8080/');
+const env = {
+  // SERVER_ADDRESS: "20.108.113.114",
+  SERVER_ADDRESS: "localhost",
+  SERVER_PORT: "8080"
+}
+
+const server_address = env.SERVER_ADDRESS
+const server_port = env.SERVER_PORT
+
+console.log(`connecting to https://${server_address}:${server_port}/`);
+socket = io.connect(`https://${server_address}:${server_port}/`, { transports: ["websocket"] });
 
 canv.height = document.documentElement.clientHeight;
 canv.width = document.documentElement.clientWidth;
